@@ -320,6 +320,14 @@ struct LocalizedStrings {
         "action.cancel": [.english: "Cancel", .vietnamese: "Hủy"],
         "agents.saveConfig": [.english: "Save Config", .vietnamese: "Lưu cấu hình"],
         
+        // Updates
+        "settings.updates": [.english: "Updates", .vietnamese: "Cập nhật"],
+        "settings.autoCheckUpdates": [.english: "Automatically check for updates", .vietnamese: "Tự động kiểm tra cập nhật"],
+        "settings.lastChecked": [.english: "Last checked", .vietnamese: "Lần kiểm tra cuối"],
+        "settings.never": [.english: "Never", .vietnamese: "Chưa bao giờ"],
+        "settings.checkNow": [.english: "Check Now", .vietnamese: "Kiểm tra ngay"],
+        "settings.version": [.english: "Version", .vietnamese: "Phiên bản"],
+        
         // About Screen
         "about.tagline": [.english: "Your AI Coding Command Center", .vietnamese: "Trung tâm điều khiển AI Coding của bạn"],
         "about.description": [.english: "Quotio is a native macOS application for managing CLIProxyAPI - a local proxy server that powers your AI coding agents. Manage multiple AI accounts, track quotas, and configure CLI tools in one place.", .vietnamese: "Quotio là ứng dụng macOS để quản lý CLIProxyAPI - máy chủ proxy cục bộ hỗ trợ các AI coding agent. Quản lý nhiều tài khoản AI, theo dõi hạn mức và cấu hình các công cụ CLI tại một nơi."],

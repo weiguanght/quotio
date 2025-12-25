@@ -5,12 +5,19 @@
 
 import SwiftUI
 import ServiceManagement
+#if canImport(Sparkle)
+import Sparkle
+#endif
 
 @main
 struct QuotioApp: App {
     @State private var viewModel = QuotaViewModel()
     @AppStorage("autoStartProxy") private var autoStartProxy = false
     @Environment(\.openWindow) private var openWindow
+    
+    #if canImport(Sparkle)
+    private let updaterService = UpdaterService.shared
+    #endif
     
     var body: some Scene {
         Window("Quotio", id: "main") {
@@ -20,11 +27,25 @@ struct QuotioApp: App {
                     if autoStartProxy && viewModel.proxyManager.isBinaryInstalled {
                         await viewModel.startProxy()
                     }
+                    // Check for updates on launch (background)
+                    #if canImport(Sparkle)
+                    updaterService.checkForUpdatesInBackground()
+                    #endif
                 }
         }
         .defaultSize(width: 1000, height: 700)
         .commands {
             CommandGroup(replacing: .newItem) { }
+            
+            // Check for Updates menu item
+            #if canImport(Sparkle)
+            CommandGroup(after: .appInfo) {
+                Button("Check for Updates...") {
+                    updaterService.checkForUpdates()
+                }
+                .disabled(!updaterService.canCheckForUpdates)
+            }
+            #endif
         }
         
         #if os(macOS)

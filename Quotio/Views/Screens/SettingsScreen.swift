@@ -161,6 +161,9 @@ struct SettingsScreen: View {
             // Notifications
             NotificationSettingsSection()
             
+            // Updates
+            UpdateSettingsSection()
+            
             // Paths
             Section {
                 LabeledContent("settings.binary".localized()) {
@@ -271,7 +274,47 @@ struct NotificationSettingsSection: View {
     }
 }
 
-// MARK: - App Settings View (Legacy - kept for compatibility)
+// MARK: - Update Settings Section
+
+struct UpdateSettingsSection: View {
+    @AppStorage("autoCheckUpdates") private var autoCheckUpdates = true
+    
+    #if canImport(Sparkle)
+    private let updaterService = UpdaterService.shared
+    #endif
+    
+    var body: some View {
+        Section {
+            #if canImport(Sparkle)
+            Toggle("settings.autoCheckUpdates".localized(), isOn: $autoCheckUpdates)
+                .onChange(of: autoCheckUpdates) { _, newValue in
+                    updaterService.automaticallyChecksForUpdates = newValue
+                }
+            
+            HStack {
+                Text("settings.lastChecked".localized())
+                Spacer()
+                if let date = updaterService.lastUpdateCheckDate {
+                    Text(date, style: .relative)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("settings.never".localized())
+                        .foregroundStyle(.secondary)
+                }
+            }
+            
+            Button("settings.checkNow".localized()) {
+                updaterService.checkForUpdates()
+            }
+            .disabled(!updaterService.canCheckForUpdates)
+            #else
+            Text("settings.version".localized() + ": " + (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"))
+            #endif
+        } header: {
+            Label("settings.updates".localized(), systemImage: "arrow.down.circle")
+        }
+    }
+}
 
 struct AppSettingsView: View {
     var body: some View {

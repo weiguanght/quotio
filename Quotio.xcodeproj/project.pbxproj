@@ -65,6 +65,7 @@
 			);
 			name = Quotio;
 			packageProductDependencies = (
+				78D386B12EFBF30500C40FB6 /* Sparkle */,
 			);
 			productName = Quotio;
 			productReference = 78D386942EFBF30400C40FB6 /* Quotio.app */;
@@ -96,6 +97,9 @@
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 78D386952EFBF30400C40FB6 /* Products */;
+			packageReferences = (
+				78D386B02EFBF30500C40FB6 /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -347,6 +351,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		78D386B02EFBF30500C40FB6 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		78D386B12EFBF30500C40FB6 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 78D386B02EFBF30500C40FB6 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 78D3868C2EFBF30400C40FB6 /* Project object */;
 }

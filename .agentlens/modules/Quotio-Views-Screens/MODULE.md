@@ -8,14 +8,14 @@
 
 | File | Lines | Large |
 | ---- | ----- | ----- |
-| `Quotio/Views/Screens/APIKeysScreen.swift` | 260 |  |
-| `Quotio/Views/Screens/AgentSetupScreen.swift` | 200 |  |
-| `Quotio/Views/Screens/DashboardScreen.swift` | 1014 | 📊 |
-| `Quotio/Views/Screens/FallbackScreen.swift` | 528 | 📊 |
-| `Quotio/Views/Screens/LogsScreen.swift` | 541 | 📊 |
-| `Quotio/Views/Screens/ProvidersScreen.swift` | 975 | 📊 |
-| `Quotio/Views/Screens/QuotaScreen.swift` | 1599 | 📊 |
-| `Quotio/Views/Screens/SettingsScreen.swift` | 2998 | 📊 |
+| `Quotio/Views/Screens/APIKeysScreen.swift` | 267 |  |
+| `Quotio/Views/Screens/AgentSetupScreen.swift` | 207 |  |
+| `Quotio/Views/Screens/DashboardScreen.swift` | 1025 | 📊 |
+| `Quotio/Views/Screens/FallbackScreen.swift` | 537 | 📊 |
+| `Quotio/Views/Screens/LogsScreen.swift` | 550 | 📊 |
+| `Quotio/Views/Screens/ProvidersScreen.swift` | 988 | 📊 |
+| `Quotio/Views/Screens/QuotaScreen.swift` | 1634 | 📊 |
+| `Quotio/Views/Screens/SettingsScreen.swift` | 3061 | 📊 |
 
 ## Documentation
 
@@ -28,7 +28,7 @@
 
 ## 🟢 Low Priority
 
-### `NOTE` (Quotio/Views/Screens/ProvidersScreen.swift:65)
+### `NOTE` (Quotio/Views/Screens/ProvidersScreen.swift:66)
 
 > GLM uses API key auth via CustomProviderService, so skip it here
 ---

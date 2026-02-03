@@ -1,101 +1,44 @@
-name: Build DMG (Intel, macOS 13 compatible)
+name: Build macOS 13 Intel DMG
 
 on:
-  push:
-    branches: [ main, master ]
-  pull_request:
   workflow_dispatch:
 
-env:
-  PROJECT_PATH: Quotio.xcodeproj
-  SCHEME: Quotio
-  CONFIGURATION: Release
-  MACOSX_DEPLOYMENT_TARGET: "13.0"
-  ARCHS: "x86_64"
-  BUILD_DIR: build/macos13-intel
-  ARCHIVE_PATH: build/macos13-intel/Quotio.xcarchive
-
 jobs:
-  build-dmg:
+  build:
     runs-on: macos-15-intel
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
-
-      - name: Trust Swift macros in CI (skip fingerprint validation)
+      - name: Build app (macOS 13, Intel)
         run: |
-          set -euo pipefail
-          defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
-
-      - name: Environment info
-        run: |
-          set -euo pipefail
-          sw_vers
-          uname -m
-          xcodebuild -version
-          swiftc --version
-
-      - name: Build (archive)
-        run: |
-          set -euo pipefail
-          rm -rf "$BUILD_DIR"
-          mkdir -p "$BUILD_DIR"
-
-          xcodebuild -skipMacroValidation archive \
-            -project "$PROJECT_PATH" \
-            -scheme "$SCHEME" \
-            -configuration "$CONFIGURATION" \
-            -destination "generic/platform=macOS" \
-            -archivePath "$ARCHIVE_PATH" \
-            SKIP_INSTALL=NO \
-            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
-            CODE_SIGN_IDENTITY="-" \
-            CODE_SIGNING_REQUIRED=NO \
+          set -euxo pipefail
+          mkdir -p build/macos13-intel
+          xcodebuild \
+            -project Quotio.xcodeproj \
+            -scheme Quotio \
+            -configuration Release \
+            ARCHS=x86_64 \
+            MACOSX_DEPLOYMENT_TARGET=13.0 \
             CODE_SIGNING_ALLOWED=NO \
-            ONLY_ACTIVE_ARCH=YES \
-            ARCHS="$ARCHS" \
-            MACOSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" \
-            | tee "$BUILD_DIR/xcodebuild.log"
+            CODE_SIGNING_REQUIRED=NO \
+            CONFIGURATION_BUILD_DIR="$PWD/build/macos13-intel" \
+            build \
+            2>&1 | tee build/macos13-intel/xcodebuild.log
 
-      - name: Extract .app from archive
+      - name: Create DMG
         run: |
-          set -euo pipefail
-          cp -R "$ARCHIVE_PATH/Products/Applications/Quotio.app" "$BUILD_DIR/Quotio.app"
-
-      - name: Verify binary (x86_64 + min macOS 13)
-        run: |
-          set -euo pipefail
-          BIN="$BUILD_DIR/Quotio.app/Contents/MacOS/Quotio"
-          file "$BIN"
-          lipo -info "$BIN" || true
-          otool -l "$BIN" | awk '
-            $1=="cmd" && ($2=="LC_BUILD_VERSION" || $2=="LC_VERSION_MIN_MACOSX"){cmd=$2;show=1}
-            show && $1=="minos"{print cmd": "$2;show=0}
-            show && $1=="version"{print cmd": "$2;show=0}
-          '
-
-      - name: Create DMG (unsigned)
-        run: |
-          set -euo pipefail
-          DMG="$BUILD_DIR/Quotio-macos13-intel.dmg"
-          rm -f "$DMG"
+          set -euxo pipefail
           hdiutil create \
             -volname "Quotio" \
-            -srcfolder "$BUILD_DIR/Quotio.app" \
-            -ov -format UDZO \
-            "$DMG"
-          shasum -a 256 "$DMG" | tee "$DMG.sha256"
+            -srcfolder build/macos13-intel/Quotio.app \
+            -ov \
+            -format UDZO \
+            build/macos13-intel/Quotio-macos13-intel.dmg
+          shasum -a 256 build/macos13-intel/Quotio-macos13-intel.dmg > build/macos13-intel/Quotio-macos13-intel.dmg.sha256
 
-      - name: Upload artifact
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Quotio-macos13-intel-dmg
-          path: |
-            build/macos13-intel/Quotio-macos13-intel.dmg
-            build/macos13-intel/Quotio-macos13-intel.dmg.sha256
-            build/macos13-intel/xcodebuild.log
+          path: build/macos13-intel

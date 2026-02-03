@@ -4,28 +4,28 @@
 
 Symbol maps for 9 large files in this module.
 
-## Quotio/QuotioApp.swift (597 lines)
+## Quotio/QuotioApp.swift (606 lines)
 
 | Line | Kind | Name | Visibility |
 | ---- | ---- | ---- | ---------- |
-| 17 | class | AppBootstrap | (internal) |
-| 31 | method | init | (private) |
-| 36 | fn | initializeIfNeeded | (internal) |
-| 52 | fn | completeOnboarding | (internal) |
-| 56 | fn | performFullInitialization | (private) |
-| 85 | fn | updateStatusBar | (internal) |
-| 137 | struct | QuotioApp | (internal) |
-| 238 | class | AppDelegate | (internal) |
-| 241 | fn | applicationDidFinishLaunching | (internal) |
-| 295 | fn | applicationShouldTerminateAfterLastWindowClosed | (internal) |
-| 299 | fn | applicationShouldHandleReopen | (internal) |
-| 317 | fn | applicationWillTerminate | (internal) |
-| 341 | fn | handleWindowDidBecomeKey | (private) |
-| 345 | fn | handleWindowWillClose | (private) |
-| 362 | struct | ContentView | (internal) |
-| 495 | struct | RemoteStatusRow | (internal) |
-| 538 | struct | ProxyStatusRow | (internal) |
-| 569 | struct | QuotaRefreshStatusRow | (internal) |
+| 18 | class | AppBootstrap | (internal) |
+| 32 | method | init | (private) |
+| 37 | fn | initializeIfNeeded | (internal) |
+| 53 | fn | completeOnboarding | (internal) |
+| 57 | fn | performFullInitialization | (private) |
+| 86 | fn | updateStatusBar | (internal) |
+| 138 | struct | QuotioApp | (internal) |
+| 239 | class | AppDelegate | (internal) |
+| 242 | fn | applicationDidFinishLaunching | (internal) |
+| 296 | fn | applicationShouldTerminateAfterLastWindowClosed | (internal) |
+| 300 | fn | applicationShouldHandleReopen | (internal) |
+| 318 | fn | applicationWillTerminate | (internal) |
+| 342 | fn | handleWindowDidBecomeKey | (private) |
+| 346 | fn | handleWindowWillClose | (private) |
+| 363 | struct | ContentView | (internal) |
+| 498 | struct | RemoteStatusRow | (internal) |
+| 543 | struct | ProxyStatusRow | (internal) |
+| 576 | struct | QuotaRefreshStatusRow | (internal) |
 
 ## Quotio/Services/AgentConfigurationService.swift (1394 lines)
 
@@ -153,133 +153,133 @@ Symbol maps for 9 large files in this module.
 | 694 | method | init | (internal) |
 | 708 | fn | encode | (internal) |
 
-## Quotio/Services/Proxy/CLIProxyManager.swift (1838 lines)
+## Quotio/Services/Proxy/CLIProxyManager.swift (1839 lines)
 
 | Line | Kind | Name | Visibility |
 | ---- | ---- | ---- | ---------- |
-| 9 | class | CLIProxyManager | (internal) |
-| 181 | method | init | (internal) |
-| 219 | fn | updateConfigValue | (private) |
-| 239 | fn | updateConfigPort | (private) |
-| 243 | fn | updateConfigHost | (private) |
-| 247 | fn | ensureApiKeyExistsInConfig | (private) |
-| 296 | fn | updateConfigLogging | (internal) |
-| 303 | fn | updateConfigRoutingStrategy | (internal) |
-| 307 | fn | updateConfigProxyURL | (internal) |
-| 327 | fn | ensureConfigExists | (private) |
-| 361 | fn | syncSecretKeyInConfig | (private) |
-| 377 | fn | regenerateManagementKey | (internal) |
-| 412 | fn | syncProxyURLInConfig | (private) |
-| 425 | fn | syncCustomProvidersToConfig | (private) |
-| 442 | fn | downloadAndInstallBinary | (internal) |
-| 503 | fn | fetchLatestRelease | (private) |
-| 524 | fn | findCompatibleAsset | (private) |
-| 549 | fn | downloadAsset | (private) |
-| 568 | fn | extractAndInstall | (private) |
-| 630 | fn | findBinaryInDirectory | (private) |
-| 663 | fn | start | (internal) |
-| 795 | fn | stop | (internal) |
-| 851 | fn | startHealthMonitor | (private) |
-| 865 | fn | stopHealthMonitor | (private) |
-| 870 | fn | performHealthCheck | (private) |
-| 933 | fn | cleanupOrphanProcesses | (private) |
-| 987 | fn | terminateAuthProcess | (internal) |
-| 993 | fn | toggle | (internal) |
-| 1001 | fn | copyEndpointToClipboard | (internal) |
-| 1006 | fn | revealInFinder | (internal) |
-| 1013 | enum | ProxyError | (internal) |
-| 1044 | enum | AuthCommand | (internal) |
-| 1082 | struct | AuthCommandResult | (internal) |
-| 1088 | mod | extension CLIProxyManager | (internal) |
-| 1089 | fn | runAuthCommand | (internal) |
-| 1121 | fn | appendOutput | (internal) |
-| 1125 | fn | tryResume | (internal) |
-| 1136 | fn | safeResume | (internal) |
-| 1236 | mod | extension CLIProxyManager | (internal) |
-| 1266 | fn | checkForUpgrade | (internal) |
-| 1314 | fn | saveInstalledVersion | (private) |
-| 1322 | fn | fetchAvailableReleases | (internal) |
-| 1344 | fn | versionInfo | (internal) |
-| 1350 | fn | fetchGitHubRelease | (private) |
-| 1372 | fn | findCompatibleAsset | (private) |
-| 1405 | fn | performManagedUpgrade | (internal) |
-| 1459 | fn | downloadAndInstallVersion | (private) |
-| 1506 | fn | startDryRun | (private) |
-| 1577 | fn | promote | (private) |
-| 1612 | fn | rollback | (internal) |
-| 1645 | fn | stopTestProxy | (private) |
-| 1674 | fn | stopTestProxySync | (private) |
-| 1700 | fn | findUnusedPort | (private) |
-| 1710 | fn | isPortInUse | (private) |
-| 1729 | fn | createTestConfig | (private) |
-| 1757 | fn | cleanupTestConfig | (private) |
-| 1765 | fn | isNewerVersion | (private) |
-| 1768 | fn | parseVersion | (internal) |
-| 1800 | fn | findPreviousVersion | (private) |
-| 1813 | fn | migrateToVersionedStorage | (internal) |
+| 10 | class | CLIProxyManager | (internal) |
+| 182 | method | init | (internal) |
+| 220 | fn | updateConfigValue | (private) |
+| 240 | fn | updateConfigPort | (private) |
+| 244 | fn | updateConfigHost | (private) |
+| 248 | fn | ensureApiKeyExistsInConfig | (private) |
+| 297 | fn | updateConfigLogging | (internal) |
+| 304 | fn | updateConfigRoutingStrategy | (internal) |
+| 308 | fn | updateConfigProxyURL | (internal) |
+| 328 | fn | ensureConfigExists | (private) |
+| 362 | fn | syncSecretKeyInConfig | (private) |
+| 378 | fn | regenerateManagementKey | (internal) |
+| 413 | fn | syncProxyURLInConfig | (private) |
+| 426 | fn | syncCustomProvidersToConfig | (private) |
+| 443 | fn | downloadAndInstallBinary | (internal) |
+| 504 | fn | fetchLatestRelease | (private) |
+| 525 | fn | findCompatibleAsset | (private) |
+| 550 | fn | downloadAsset | (private) |
+| 569 | fn | extractAndInstall | (private) |
+| 631 | fn | findBinaryInDirectory | (private) |
+| 664 | fn | start | (internal) |
+| 796 | fn | stop | (internal) |
+| 852 | fn | startHealthMonitor | (private) |
+| 866 | fn | stopHealthMonitor | (private) |
+| 871 | fn | performHealthCheck | (private) |
+| 934 | fn | cleanupOrphanProcesses | (private) |
+| 988 | fn | terminateAuthProcess | (internal) |
+| 994 | fn | toggle | (internal) |
+| 1002 | fn | copyEndpointToClipboard | (internal) |
+| 1007 | fn | revealInFinder | (internal) |
+| 1014 | enum | ProxyError | (internal) |
+| 1045 | enum | AuthCommand | (internal) |
+| 1083 | struct | AuthCommandResult | (internal) |
+| 1089 | mod | extension CLIProxyManager | (internal) |
+| 1090 | fn | runAuthCommand | (internal) |
+| 1122 | fn | appendOutput | (internal) |
+| 1126 | fn | tryResume | (internal) |
+| 1137 | fn | safeResume | (internal) |
+| 1237 | mod | extension CLIProxyManager | (internal) |
+| 1267 | fn | checkForUpgrade | (internal) |
+| 1315 | fn | saveInstalledVersion | (private) |
+| 1323 | fn | fetchAvailableReleases | (internal) |
+| 1345 | fn | versionInfo | (internal) |
+| 1351 | fn | fetchGitHubRelease | (private) |
+| 1373 | fn | findCompatibleAsset | (private) |
+| 1406 | fn | performManagedUpgrade | (internal) |
+| 1460 | fn | downloadAndInstallVersion | (private) |
+| 1507 | fn | startDryRun | (private) |
+| 1578 | fn | promote | (private) |
+| 1613 | fn | rollback | (internal) |
+| 1646 | fn | stopTestProxy | (private) |
+| 1675 | fn | stopTestProxySync | (private) |
+| 1701 | fn | findUnusedPort | (private) |
+| 1711 | fn | isPortInUse | (private) |
+| 1730 | fn | createTestConfig | (private) |
+| 1758 | fn | cleanupTestConfig | (private) |
+| 1766 | fn | isNewerVersion | (private) |
+| 1769 | fn | parseVersion | (internal) |
+| 1801 | fn | findPreviousVersion | (private) |
+| 1814 | fn | migrateToVersionedStorage | (internal) |
 
-## Quotio/Services/Proxy/ProxyBridge.swift (1091 lines)
-
-| Line | Kind | Name | Visibility |
-| ---- | ---- | ---- | ---------- |
-| 22 | struct | FallbackContext | (internal) |
-| 96 | class | ProxyBridge | (internal) |
-| 156 | method | init | (internal) |
-| 165 | fn | configure | (internal) |
-| 188 | fn | start | (internal) |
-| 228 | fn | stop | (internal) |
-| 238 | fn | handleListenerState | (private) |
-| 254 | fn | handleNewConnection | (private) |
-| 472 | fn | createFallbackContext | (private) |
-
-## Quotio/Services/StatusBarMenuBuilder.swift (1415 lines)
+## Quotio/Services/Proxy/ProxyBridge.swift (1092 lines)
 
 | Line | Kind | Name | Visibility |
 | ---- | ---- | ---- | ---------- |
-| 18 | class | StatusBarMenuBuilder | (internal) |
-| 29 | method | init | (internal) |
-| 35 | fn | buildMenu | (internal) |
-| 127 | fn | resolveSelectedProvider | (private) |
-| 136 | fn | accountsForProvider | (private) |
-| 143 | fn | buildHeaderItem | (private) |
-| 150 | fn | buildNetworkInfoItem | (private) |
-| 177 | fn | buildAccountCardItem | (private) |
-| 206 | fn | buildViewMoreAccountsItem | (private) |
-| 217 | fn | buildAntigravitySubmenu | (private) |
-| 233 | fn | showSwitchConfirmation | (private) |
-| 262 | fn | buildEmptyStateItem | (private) |
-| 269 | fn | buildActionItems | (private) |
-| 293 | class | MenuActionHandler | (internal) |
-| 302 | fn | refresh | (internal) |
-| 308 | fn | openApp | (internal) |
-| 312 | fn | quit | (internal) |
-| 316 | fn | openMainWindow | (internal) |
-| 341 | struct | MenuHeaderView | (private) |
-| 366 | struct | MenuProviderPickerView | (private) |
-| 401 | struct | ProviderFilterButton | (private) |
-| 433 | struct | ProviderIconMono | (private) |
-| 457 | struct | MenuNetworkInfoView | (private) |
-| 565 | fn | triggerCopyState | (private) |
-| 576 | fn | setCopied | (private) |
-| 587 | fn | copyButton | (private) |
-| 604 | struct | MenuAccountCardView | (private) |
-| 643 | fn | planConfig | (private) |
-| 875 | fn | formatLocalTime | (private) |
-| 894 | struct | ModelBadgeData | (private) |
-| 933 | struct | AntigravityDisplayGroup | (private) |
-| 940 | fn | menuDisplayPercent | (private) |
-| 944 | fn | menuStatusColor | (private) |
-| 962 | struct | LowestBarLayout | (private) |
-| 1042 | struct | RingGridLayout | (private) |
-| 1086 | struct | CardGridLayout | (private) |
-| 1135 | struct | ModernProgressBar | (private) |
-| 1170 | struct | PercentageBadge | (private) |
-| 1206 | struct | MenuModelDetailView | (private) |
-| 1258 | struct | MenuEmptyStateView | (private) |
-| 1273 | struct | MenuViewMoreAccountsView | (private) |
-| 1321 | mod | extension AIProvider | (private) |
-| 1343 | struct | MenuActionsView | (private) |
-| 1381 | struct | MenuBarActionButton | (private) |
+| 23 | struct | FallbackContext | (internal) |
+| 97 | class | ProxyBridge | (internal) |
+| 157 | method | init | (internal) |
+| 166 | fn | configure | (internal) |
+| 189 | fn | start | (internal) |
+| 229 | fn | stop | (internal) |
+| 239 | fn | handleListenerState | (private) |
+| 255 | fn | handleNewConnection | (private) |
+| 473 | fn | createFallbackContext | (private) |
+
+## Quotio/Services/StatusBarMenuBuilder.swift (1448 lines)
+
+| Line | Kind | Name | Visibility |
+| ---- | ---- | ---- | ---------- |
+| 19 | class | StatusBarMenuBuilder | (internal) |
+| 30 | method | init | (internal) |
+| 36 | fn | buildMenu | (internal) |
+| 128 | fn | resolveSelectedProvider | (private) |
+| 137 | fn | accountsForProvider | (private) |
+| 144 | fn | buildHeaderItem | (private) |
+| 151 | fn | buildNetworkInfoItem | (private) |
+| 178 | fn | buildAccountCardItem | (private) |
+| 207 | fn | buildViewMoreAccountsItem | (private) |
+| 218 | fn | buildAntigravitySubmenu | (private) |
+| 234 | fn | showSwitchConfirmation | (private) |
+| 263 | fn | buildEmptyStateItem | (private) |
+| 270 | fn | buildActionItems | (private) |
+| 294 | class | MenuActionHandler | (internal) |
+| 303 | fn | refresh | (internal) |
+| 309 | fn | openApp | (internal) |
+| 313 | fn | quit | (internal) |
+| 317 | fn | openMainWindow | (internal) |
+| 342 | struct | MenuHeaderView | (private) |
+| 369 | struct | MenuProviderPickerView | (private) |
+| 406 | struct | ProviderFilterButton | (private) |
+| 440 | struct | ProviderIconMono | (private) |
+| 466 | struct | MenuNetworkInfoView | (private) |
+| 576 | fn | triggerCopyState | (private) |
+| 587 | fn | setCopied | (private) |
+| 598 | fn | copyButton | (private) |
+| 615 | struct | MenuAccountCardView | (private) |
+| 654 | fn | planConfig | (private) |
+| 888 | fn | formatLocalTime | (private) |
+| 907 | struct | ModelBadgeData | (private) |
+| 946 | struct | AntigravityDisplayGroup | (private) |
+| 953 | fn | menuDisplayPercent | (private) |
+| 957 | fn | menuStatusColor | (private) |
+| 975 | struct | LowestBarLayout | (private) |
+| 1057 | struct | RingGridLayout | (private) |
+| 1103 | struct | CardGridLayout | (private) |
+| 1154 | struct | ModernProgressBar | (private) |
+| 1191 | struct | PercentageBadge | (private) |
+| 1229 | struct | MenuModelDetailView | (private) |
+| 1283 | struct | MenuEmptyStateView | (private) |
+| 1300 | struct | MenuViewMoreAccountsView | (private) |
+| 1350 | mod | extension AIProvider | (private) |
+| 1372 | struct | MenuActionsView | (private) |
+| 1412 | struct | MenuBarActionButton | (private) |
 
 ## Quotio/ViewModels/QuotaViewModel.swift (1825 lines)
 

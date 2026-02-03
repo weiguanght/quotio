@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import Perception
 
 struct QuotaScreen: View {
     @Environment(QuotaViewModel.self) private var viewModel
@@ -76,74 +77,76 @@ struct QuotaScreen: View {
     }
     
     var body: some View {
-        Group {
-            if !hasAnyData {
-                ContentUnavailableView(
-                    "empty.noAccounts".localized(),
-                    systemImage: "person.crop.circle.badge.questionmark",
-                    description: Text("empty.addProviderAccounts".localized())
-                )
-            } else {
-                mainContent
-            }
-        }
-        .navigationTitle("nav.quota".localized())
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                    Menu {
-                        // Display Style
-                        Picker(selection: Binding(
-                            get: { settings.quotaDisplayStyle },
-                            set: { settings.quotaDisplayStyle = $0 }
-                        )) {
-                            ForEach(QuotaDisplayStyle.allCases) { style in
-                                Label(style.localizationKey.localized(), systemImage: style.iconName)
-                                    .tag(style)
-                            }
-                        } label: {
-                            Text("settings.quota.displayStyle".localized())
-                        }
-                        .pickerStyle(.inline)
-                        
-                        Divider()
-                        
-                        // Display Mode (Used vs Remaining)
-                        Picker(selection: Binding(
-                            get: { settings.quotaDisplayMode },
-                            set: { settings.quotaDisplayMode = $0 }
-                        )) {
-                            ForEach(QuotaDisplayMode.allCases) { mode in
-                                Text(mode.localizationKey.localized())
-                                    .tag(mode)
-                            }
-                        } label: {
-                            Text("display_mode".localized())
-                        }
-                        .pickerStyle(.inline)
-                    } label: {
-                        Image(systemName: "slider.horizontal.3")
-                    }
+        WithPerceptionTracking {
+            Group {
+                if !hasAnyData {
+                    ContentUnavailableView(
+                        "empty.noAccounts".localized(),
+                        systemImage: "person.crop.circle.badge.questionmark",
+                        description: Text("empty.addProviderAccounts".localized())
+                    )
+                } else {
+                    mainContent
                 }
-                
+            }
+            .navigationTitle("nav.quota".localized())
+            .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                Button {
-                    Task {
-                        await viewModel.refreshQuotasUnified()
+                        Menu {
+                            // Display Style
+                            Picker(selection: Binding(
+                                get: { settings.quotaDisplayStyle },
+                                set: { settings.quotaDisplayStyle = $0 }
+                            )) {
+                                ForEach(QuotaDisplayStyle.allCases) { style in
+                                    Label(style.localizationKey.localized(), systemImage: style.iconName)
+                                        .tag(style)
+                                }
+                            } label: {
+                                Text("settings.quota.displayStyle".localized())
+                            }
+                            .pickerStyle(.inline)
+                    
+                            Divider()
+                    
+                            // Display Mode (Used vs Remaining)
+                            Picker(selection: Binding(
+                                get: { settings.quotaDisplayMode },
+                                set: { settings.quotaDisplayMode = $0 }
+                            )) {
+                                ForEach(QuotaDisplayMode.allCases) { mode in
+                                    Text(mode.localizationKey.localized())
+                                        .tag(mode)
+                                }
+                            } label: {
+                                Text("display_mode".localized())
+                            }
+                            .pickerStyle(.inline)
+                        } label: {
+                            Image(systemName: "slider.horizontal.3")
+                        }
                     }
-                } label: {
-                    Image(systemName: "arrow.clockwise")
+            
+                    ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        Task {
+                            await viewModel.refreshQuotasUnified()
+                        }
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    .disabled(viewModel.isLoadingQuotas)
                 }
-                .disabled(viewModel.isLoadingQuotas)
             }
-        }
-        .onAppear {
-            if selectedProvider == nil, let first = availableProviders.first {
-                selectedProvider = first
+            .onAppear {
+                if selectedProvider == nil, let first = availableProviders.first {
+                    selectedProvider = first
+                }
             }
-        }
-        .onChange(of: availableProviders) { _, newProviders in
-            if selectedProvider == nil || !newProviders.contains(selectedProvider!) {
-                selectedProvider = newProviders.first
+            .onChange(of: availableProviders) { _, newProviders in
+                if selectedProvider == nil || !newProviders.contains(selectedProvider!) {
+                    selectedProvider = newProviders.first
+                }
             }
         }
     }
@@ -259,57 +262,59 @@ private struct ProviderSegmentButton: View {
     }
     
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 8) {
-                ProviderIcon(provider: provider, size: 20)
-                
-                Text(provider.displayName)
-                    .font(.subheadline)
-                    .fontWeight(isSelected ? .semibold : .medium)
-                
-                if accountCount > 1 {
-                    Text(String(accountCount))
-                        .font(.caption2)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(isSelected ? .white : .secondary)
-                        .padding(.horizontal, 5)
-                        .padding(.vertical, 2)
-                        .background(isSelected ? statusColor : Color.primary.opacity(0.08))
-                        .clipShape(Capsule())
-                }
-                
-                if quotaPercent != nil {
-                    ZStack {
-                        Circle()
-                            .stroke(Color.primary.opacity(0.1), lineWidth: 2)
-                        Circle()
-                            .trim(from: 0, to: remainingPercent / 100)
-                            .stroke(statusColor, style: StrokeStyle(lineWidth: 2, lineCap: .round))
-                            .rotationEffect(.degrees(-90))
+        WithPerceptionTracking {
+            Button(action: action) {
+                HStack(spacing: 8) {
+                    ProviderIcon(provider: provider, size: 20)
+            
+                    Text(provider.displayName)
+                        .font(.subheadline)
+                        .fontWeight(isSelected ? .semibold : .medium)
+            
+                    if accountCount > 1 {
+                        Text(String(accountCount))
+                            .font(.caption2)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(isSelected ? .white : .secondary)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 2)
+                            .background(isSelected ? statusColor : Color.primary.opacity(0.08))
+                            .clipShape(Capsule())
                     }
-                    .frame(width: 12, height: 12)
+            
+                    if quotaPercent != nil {
+                        ZStack {
+                            Circle()
+                                .stroke(Color.primary.opacity(0.1), lineWidth: 2)
+                            Circle()
+                                .trim(from: 0, to: remainingPercent / 100)
+                                .stroke(statusColor, style: StrokeStyle(lineWidth: 2, lineCap: .round))
+                                .rotationEffect(.degrees(-90))
+                        }
+                        .frame(width: 12, height: 12)
+                    }
                 }
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .background {
-                if isSelected {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(.ultraThinMaterial)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .stroke(statusColor.opacity(0.3), lineWidth: 1)
-                        )
-                } else {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Color.primary.opacity(0.04))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background {
+                    if isSelected {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(.ultraThinMaterial)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .stroke(statusColor.opacity(0.3), lineWidth: 1)
+                            )
+                    } else {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(Color.primary.opacity(0.04))
+                    }
                 }
+                .foregroundStyle(isSelected ? .primary : .secondary)
+                .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
-            .foregroundStyle(isSelected ? .primary : .secondary)
-            .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .buttonStyle(.plain)
+            .animation(.easeOut(duration: 0.15), value: isSelected)
         }
-        .buttonStyle(.plain)
-        .animation(.easeOut(duration: 0.15), value: isSelected)
     }
 }
 
@@ -326,9 +331,11 @@ private struct QuotaStatusDot: View {
     }
     
     var body: some View {
-        Circle()
-            .fill(color)
-            .frame(width: size, height: size)
+        WithPerceptionTracking {
+            Circle()
+                .fill(color)
+                .frame(width: size, height: size)
+        }
     }
 }
 
@@ -379,18 +386,20 @@ private struct ProviderQuotaView: View {
     }
     
     var body: some View {
-        VStack(spacing: 16) {
-            if allAccounts.isEmpty && isLoading {
-                QuotaLoadingView()
-            } else if allAccounts.isEmpty {
-                emptyState
-            } else {
-                ForEach(allAccounts, id: \.key) { account in
-                    AccountQuotaCardV2(
-                        provider: provider,
-                        account: account,
-                        isLoading: isLoading && account.quotaData == nil
-                    )
+        WithPerceptionTracking {
+            VStack(spacing: 16) {
+                if allAccounts.isEmpty && isLoading {
+                    QuotaLoadingView()
+                } else if allAccounts.isEmpty {
+                    emptyState
+                } else {
+                    ForEach(allAccounts, id: \.key) { account in
+                        AccountQuotaCardV2(
+                            provider: provider,
+                            account: account,
+                            isLoading: isLoading && account.quotaData == nil
+                        )
+                    }
                 }
             }
         }
@@ -510,29 +519,31 @@ private struct AccountQuotaCardV2: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            accountHeader
-            
-            if isLoading {
-                QuotaLoadingView()
-            } else if hasQuotaData {
-                usageSection
-            } else if let message = account.authFile?.statusMessage, !message.isEmpty {
-                Text(message)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+        WithPerceptionTracking {
+            VStack(alignment: .leading, spacing: 16) {
+                accountHeader
+        
+                if isLoading {
+                    QuotaLoadingView()
+                } else if hasQuotaData {
+                    usageSection
+                } else if let message = account.authFile?.statusMessage, !message.isEmpty {
+                    Text(message)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
             }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(.background)
+                    .shadow(color: .primary.opacity(0.06), radius: 8, x: 0, y: 2)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(Color.primary.opacity(0.06), lineWidth: 0.5)
+            )
         }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(.background)
-                .shadow(color: .primary.opacity(0.06), radius: 8, x: 0, y: 2)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(Color.primary.opacity(0.06), lineWidth: 0.5)
-        )
     }
     
     // MARK: - Account Header
@@ -881,14 +892,16 @@ private struct PlanBadgeV2Compact: View {
     }
     
     var body: some View {
-        Text(tierConfig.name)
-            .font(.caption2)
-            .fontWeight(.medium)
-            .foregroundStyle(tierConfig.color)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 2)
-            .background(tierConfig.color.opacity(0.12))
-            .clipShape(Capsule())
+        WithPerceptionTracking {
+            Text(tierConfig.name)
+                .font(.caption2)
+                .fontWeight(.medium)
+                .foregroundStyle(tierConfig.color)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(tierConfig.color.opacity(0.12))
+                .clipShape(Capsule())
+        }
     }
 }
 
@@ -932,18 +945,20 @@ private struct PlanBadgeV2: View {
     }
     
     var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: planConfig.icon)
-                .font(.caption)
-            Text(displayName)
-                .font(.caption)
-                .fontWeight(.medium)
+        WithPerceptionTracking {
+            HStack(spacing: 4) {
+                Image(systemName: planConfig.icon)
+                    .font(.caption)
+                Text(displayName)
+                    .font(.caption)
+                    .fontWeight(.medium)
+            }
+            .foregroundStyle(planConfig.color)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(planConfig.color.opacity(0.1))
+            .clipShape(Capsule())
         }
-        .foregroundStyle(planConfig.color)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(planConfig.color.opacity(0.1))
-        .clipShape(Capsule())
     }
 }
 
@@ -977,14 +992,16 @@ private struct SubscriptionBadgeV2: View {
     }
     
     var body: some View {
-        Text(tierConfig.name)
-            .font(.caption2)
-            .fontWeight(.medium)
-            .foregroundStyle(tierConfig.color)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 2)
-            .background(tierConfig.color.opacity(0.12))
-            .clipShape(Capsule())
+        WithPerceptionTracking {
+            Text(tierConfig.name)
+                .font(.caption2)
+                .fontWeight(.medium)
+                .foregroundStyle(tierConfig.color)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(tierConfig.color.opacity(0.12))
+                .clipShape(Capsule())
+        }
     }
 }
 
@@ -1021,56 +1038,58 @@ private struct AntigravityGroupRow: View {
     }
     
     var body: some View {
-        let displayPercent = displayHelper.displayPercent(remainingPercent: remainingPercent)
-        let statusColor = displayHelper.statusColor(remainingPercent: remainingPercent)
-        
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 8) {
-                Image(systemName: groupIcon)
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-                    .frame(width: 16)
-                
-                Text(group.name)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                
-                if group.models.count > 1 {
-                    Text(String(group.models.count))
-                        .font(.caption2)
+        WithPerceptionTracking {
+            let displayPercent = displayHelper.displayPercent(remainingPercent: remainingPercent)
+            let statusColor = displayHelper.statusColor(remainingPercent: remainingPercent)
+    
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 8) {
+                    Image(systemName: groupIcon)
+                        .font(.caption)
                         .foregroundStyle(.tertiary)
-                        .padding(.horizontal, 4)
-                        .padding(.vertical, 1)
-                        .background(Color.primary.opacity(0.05))
-                        .clipShape(Capsule())
-                }
-                
-                Spacer()
-                
-                Text(String(format: "%.0f%%", displayPercent))
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(statusColor)
-                    .monospacedDigit()
-                
-                if let firstModel = group.models.first,
-                   firstModel.formattedResetTime != "—" && !firstModel.formattedResetTime.isEmpty {
-                    Text(firstModel.formattedResetTime)
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
-                }
-            }
+                        .frame(width: 16)
             
-            GeometryReader { proxy in
-                ZStack(alignment: .leading) {
-                    Capsule()
-                        .fill(Color.primary.opacity(0.06))
-                    Capsule()
-                        .fill(statusColor.gradient)
-                        .frame(width: proxy.size.width * (displayPercent / 100))
+                    Text(group.name)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+            
+                    if group.models.count > 1 {
+                        Text(String(group.models.count))
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 1)
+                            .background(Color.primary.opacity(0.05))
+                            .clipShape(Capsule())
+                    }
+            
+                    Spacer()
+            
+                    Text(String(format: "%.0f%%", displayPercent))
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(statusColor)
+                        .monospacedDigit()
+            
+                    if let firstModel = group.models.first,
+                       firstModel.formattedResetTime != "—" && !firstModel.formattedResetTime.isEmpty {
+                        Text(firstModel.formattedResetTime)
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                    }
                 }
+        
+                GeometryReader { proxy in
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(Color.primary.opacity(0.06))
+                        Capsule()
+                            .fill(statusColor.gradient)
+                            .frame(width: proxy.size.width * (displayPercent / 100))
+                    }
+                }
+                .frame(height: 6)
             }
-            .frame(height: 6)
         }
     }
 }
@@ -1102,52 +1121,54 @@ private struct AntigravityLowestBarLayout: View {
     }
     
     var body: some View {
-        VStack(spacing: 10) {
-            if let lowest = lowest {
-                // Hero row for bottleneck
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack {
-                        Text(lowest.name)
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                        Spacer()
-                        Text(String(format: "%.0f%%", displayPercent(for: lowest.percentage)))
-                            .font(.subheadline)
-                            .fontWeight(.bold)
-                            .foregroundStyle(displayHelper.statusColor(remainingPercent: lowest.percentage))
-                            .monospacedDigit()
-                    }
-                    
-                    GeometryReader { proxy in
-                        ZStack(alignment: .leading) {
-                            Capsule()
-                                .fill(Color.primary.opacity(0.06))
-                            Capsule()
-                                .fill(displayHelper.statusColor(remainingPercent: lowest.percentage).gradient)
-                                .frame(width: proxy.size.width * (displayPercent(for: lowest.percentage) / 100))
-                        }
-                    }
-                    .frame(height: 8)
-                }
-                .padding(10)
-                .background(displayHelper.statusColor(remainingPercent: lowest.percentage).opacity(0.08))
-                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-            }
-            
-            // Others as compact text rows
-            if !others.isEmpty {
-                VStack(spacing: 4) {
-                    ForEach(others) { group in
+        WithPerceptionTracking {
+            VStack(spacing: 10) {
+                if let lowest = lowest {
+                    // Hero row for bottleneck
+                    VStack(alignment: .leading, spacing: 6) {
                         HStack {
-                            Text(group.name)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                            Text(lowest.name)
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
                             Spacer()
-                            Text(String(format: "%.0f%%", displayPercent(for: group.percentage)))
-                                .font(.caption)
-                                .fontWeight(.medium)
-                                .foregroundStyle(displayHelper.statusColor(remainingPercent: group.percentage))
+                            Text(String(format: "%.0f%%", displayPercent(for: lowest.percentage)))
+                                .font(.subheadline)
+                                .fontWeight(.bold)
+                                .foregroundStyle(displayHelper.statusColor(remainingPercent: lowest.percentage))
                                 .monospacedDigit()
+                        }
+                
+                        GeometryReader { proxy in
+                            ZStack(alignment: .leading) {
+                                Capsule()
+                                    .fill(Color.primary.opacity(0.06))
+                                Capsule()
+                                    .fill(displayHelper.statusColor(remainingPercent: lowest.percentage).gradient)
+                                    .frame(width: proxy.size.width * (displayPercent(for: lowest.percentage) / 100))
+                            }
+                        }
+                        .frame(height: 8)
+                    }
+                    .padding(10)
+                    .background(displayHelper.statusColor(remainingPercent: lowest.percentage).opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                }
+        
+                // Others as compact text rows
+                if !others.isEmpty {
+                    VStack(spacing: 4) {
+                        ForEach(others) { group in
+                            HStack {
+                                Text(group.name)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                                Text(String(format: "%.0f%%", displayPercent(for: group.percentage)))
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(displayHelper.statusColor(remainingPercent: group.percentage))
+                                    .monospacedDigit()
+                            }
                         }
                     }
                 }
@@ -1176,21 +1197,23 @@ private struct AntigravityRingLayout: View {
     }
     
     var body: some View {
-        LazyVGrid(columns: columns, spacing: 12) {
-            ForEach(groups) { group in
-                VStack(spacing: 6) {
-                    RingProgressView(
-                        percent: displayPercent(for: group.percentage),
-                        size: 44,
-                        lineWidth: 5,
-                        tint: displayHelper.statusColor(remainingPercent: group.percentage),
-                        showLabel: true
-                    )
-                    
-                    Text(group.name)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
+        WithPerceptionTracking {
+            LazyVGrid(columns: columns, spacing: 12) {
+                ForEach(groups) { group in
+                    VStack(spacing: 6) {
+                        RingProgressView(
+                            percent: displayPercent(for: group.percentage),
+                            size: 44,
+                            lineWidth: 5,
+                            tint: displayHelper.statusColor(remainingPercent: group.percentage),
+                            showLabel: true
+                        )
+                
+                        Text(group.name)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
                 }
             }
         }
@@ -1224,63 +1247,65 @@ private struct StandardLowestBarLayout: View {
     }
     
     var body: some View {
-        VStack(spacing: 10) {
-            if let lowest = lowest {
-                // Hero row for bottleneck
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack {
-                        Text(lowest.displayName)
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                        Spacer()
-                        Text(String(format: "%.0f%%", displayPercent(for: lowest.percentage)))
-                            .font(.subheadline)
-                            .fontWeight(.bold)
-                            .foregroundStyle(displayHelper.statusColor(remainingPercent: lowest.percentage))
-                            .monospacedDigit()
-                    }
-                    
-                    GeometryReader { proxy in
-                        ZStack(alignment: .leading) {
-                            Capsule()
-                                .fill(Color.primary.opacity(0.06))
-                            Capsule()
-                                .fill(displayHelper.statusColor(remainingPercent: lowest.percentage).gradient)
-                                .frame(width: proxy.size.width * (displayPercent(for: lowest.percentage) / 100))
+        WithPerceptionTracking {
+            VStack(spacing: 10) {
+                if let lowest = lowest {
+                    // Hero row for bottleneck
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Text(lowest.displayName)
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                            Spacer()
+                            Text(String(format: "%.0f%%", displayPercent(for: lowest.percentage)))
+                                .font(.subheadline)
+                                .fontWeight(.bold)
+                                .foregroundStyle(displayHelper.statusColor(remainingPercent: lowest.percentage))
+                                .monospacedDigit()
+                        }
+                
+                        GeometryReader { proxy in
+                            ZStack(alignment: .leading) {
+                                Capsule()
+                                    .fill(Color.primary.opacity(0.06))
+                                Capsule()
+                                    .fill(displayHelper.statusColor(remainingPercent: lowest.percentage).gradient)
+                                    .frame(width: proxy.size.width * (displayPercent(for: lowest.percentage) / 100))
+                            }
+                        }
+                        .frame(height: 8)
+                
+                        if lowest.formattedResetTime != "—" && !lowest.formattedResetTime.isEmpty {
+                            Text(lowest.formattedResetTime)
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
                         }
                     }
-                    .frame(height: 8)
-                    
-                    if lowest.formattedResetTime != "—" && !lowest.formattedResetTime.isEmpty {
-                        Text(lowest.formattedResetTime)
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
-                    }
+                    .padding(10)
+                    .background(displayHelper.statusColor(remainingPercent: lowest.percentage).opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                 }
-                .padding(10)
-                .background(displayHelper.statusColor(remainingPercent: lowest.percentage).opacity(0.08))
-                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-            }
-            
-            // Others as compact text rows
-            if !others.isEmpty {
-                VStack(spacing: 4) {
-                    ForEach(others) { model in
-                        HStack {
-                            Text(model.displayName)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            Spacer()
-                            if model.formattedResetTime != "—" && !model.formattedResetTime.isEmpty {
-                                Text(model.formattedResetTime)
-                                    .font(.caption2)
-                                    .foregroundStyle(.tertiary)
+        
+                // Others as compact text rows
+                if !others.isEmpty {
+                    VStack(spacing: 4) {
+                        ForEach(others) { model in
+                            HStack {
+                                Text(model.displayName)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                                if model.formattedResetTime != "—" && !model.formattedResetTime.isEmpty {
+                                    Text(model.formattedResetTime)
+                                        .font(.caption2)
+                                        .foregroundStyle(.tertiary)
+                                }
+                                Text(String(format: "%.0f%%", displayPercent(for: model.percentage)))
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(displayHelper.statusColor(remainingPercent: model.percentage))
+                                    .monospacedDigit()
                             }
-                            Text(String(format: "%.0f%%", displayPercent(for: model.percentage)))
-                                .font(.caption)
-                                .fontWeight(.medium)
-                                .foregroundStyle(displayHelper.statusColor(remainingPercent: model.percentage))
-                                .monospacedDigit()
                         }
                     }
                 }
@@ -1309,26 +1334,28 @@ private struct StandardRingLayout: View {
     }
     
     var body: some View {
-        LazyVGrid(columns: columns, spacing: 12) {
-            ForEach(models) { model in
-                VStack(spacing: 6) {
-                    RingProgressView(
-                        percent: displayPercent(for: model.percentage),
-                        size: 44,
-                        lineWidth: 5,
-                        tint: displayHelper.statusColor(remainingPercent: model.percentage),
-                        showLabel: true
-                    )
-                    
-                    Text(model.displayName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                    
-                    if model.formattedResetTime != "—" && !model.formattedResetTime.isEmpty {
-                        Text(model.formattedResetTime)
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
+        WithPerceptionTracking {
+            LazyVGrid(columns: columns, spacing: 12) {
+                ForEach(models) { model in
+                    VStack(spacing: 6) {
+                        RingProgressView(
+                            percent: displayPercent(for: model.percentage),
+                            size: 44,
+                            lineWidth: 5,
+                            tint: displayHelper.statusColor(remainingPercent: model.percentage),
+                            showLabel: true
+                        )
+                
+                        Text(model.displayName)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                
+                        if model.formattedResetTime != "—" && !model.formattedResetTime.isEmpty {
+                            Text(model.formattedResetTime)
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
+                        }
                     }
                 }
             }
@@ -1358,50 +1385,52 @@ private struct AntigravityModelsDetailSheet: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Header
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("quota.allModels".localized())
-                        .font(.headline)
-                    Text(email.masked(if: settings.hideSensitiveInfo))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                
-                Spacer()
-                
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 24, height: 24)
-                        .background(Color.primary.opacity(0.06))
-                        .clipShape(Circle())
-                }
-                .buttonStyle(.plain)
-                .help("action.close".localized())
-            }
-            .padding()
-            
-            Divider()
-                .opacity(0.5)
-            
-            // Models Grid
-            ScrollView {
-                LazyVGrid(columns: columns, spacing: 12) {
-                    ForEach(sortedModels) { model in
-                        ModelDetailCard(model: model)
+        WithPerceptionTracking {
+            VStack(spacing: 0) {
+                // Header
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("quota.allModels".localized())
+                            .font(.headline)
+                        Text(email.masked(if: settings.hideSensitiveInfo))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
+            
+                    Spacer()
+            
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 24, height: 24)
+                            .background(Color.primary.opacity(0.06))
+                            .clipShape(Circle())
+                    }
+                    .buttonStyle(.plain)
+                    .help("action.close".localized())
                 }
                 .padding()
+        
+                Divider()
+                    .opacity(0.5)
+        
+                // Models Grid
+                ScrollView {
+                    LazyVGrid(columns: columns, spacing: 12) {
+                        ForEach(sortedModels) { model in
+                            ModelDetailCard(model: model)
+                        }
+                    }
+                    .padding()
+                }
+                .scrollContentBackground(.hidden)
             }
-            .scrollContentBackground(.hidden)
+            .frame(minWidth: 480, minHeight: 360)
+            .background(.background)
         }
-        .frame(minWidth: 480, minHeight: 360)
-        .background(.background)
     }
 }
 
@@ -1420,55 +1449,57 @@ private struct ModelDetailCard: View {
     }
     
     var body: some View {
-        let displayPercent = displayHelper.displayPercent(remainingPercent: remainingPercent)
-        let statusColor = displayHelper.statusColor(remainingPercent: remainingPercent)
-        
-        VStack(alignment: .leading, spacing: 8) {
-            // Model name (raw name)
-            Text(model.name)
-                .font(.caption)
-                .fontDesign(.monospaced)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-            
-            // Progress bar
-            GeometryReader { proxy in
-                ZStack(alignment: .leading) {
-                    Capsule()
-                        .fill(Color.primary.opacity(0.06))
-                    Capsule()
-                        .fill(statusColor.gradient)
-                        .frame(width: proxy.size.width * (displayPercent / 100))
-                }
-            }
-            .frame(height: 6)
-            
-            // Footer: Percentage + Reset time
-            HStack {
-                Text(String(format: "%.0f%%", displayPercent))
+        WithPerceptionTracking {
+            let displayPercent = displayHelper.displayPercent(remainingPercent: remainingPercent)
+            let statusColor = displayHelper.statusColor(remainingPercent: remainingPercent)
+    
+            VStack(alignment: .leading, spacing: 8) {
+                // Model name (raw name)
+                Text(model.name)
                     .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundStyle(statusColor)
-                    .monospacedDigit()
-                
-                Spacer()
-                
-                if model.formattedResetTime != "—" && !model.formattedResetTime.isEmpty {
-                    Text(model.formattedResetTime)
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
+                    .fontDesign(.monospaced)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+        
+                // Progress bar
+                GeometryReader { proxy in
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(Color.primary.opacity(0.06))
+                        Capsule()
+                            .fill(statusColor.gradient)
+                            .frame(width: proxy.size.width * (displayPercent / 100))
+                    }
+                }
+                .frame(height: 6)
+        
+                // Footer: Percentage + Reset time
+                HStack {
+                    Text(String(format: "%.0f%%", displayPercent))
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundStyle(statusColor)
+                        .monospacedDigit()
+            
+                    Spacer()
+            
+                    if model.formattedResetTime != "—" && !model.formattedResetTime.isEmpty {
+                        Text(model.formattedResetTime)
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                    }
                 }
             }
+            .padding(10)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(Color.primary.opacity(0.03))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .strokeBorder(Color.primary.opacity(0.06), lineWidth: 0.5)
+                    )
+            )
         }
-        .padding(10)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color.primary.opacity(0.03))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .strokeBorder(Color.primary.opacity(0.06), lineWidth: 0.5)
-                )
-        )
     }
 }
 
@@ -1497,64 +1528,66 @@ private struct UsageRowV2: View {
     }
     
     var body: some View {
-        let displayPercent = displayHelper.displayPercent(remainingPercent: remainingPercent)
-        let statusColor = displayHelper.statusColor(remainingPercent: remainingPercent)
-        
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 8) {
-                if let icon = icon {
-                    Image(systemName: icon)
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                        .frame(width: 16)
-                }
-                
-                Text(name)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .help(tooltip ?? "")
-                
-                Spacer()
-                
-                if let used = used {
-                    if let limit = limit, limit > 0 {
-                        Text(String(used) + "/" + String(limit))
+        WithPerceptionTracking {
+            let displayPercent = displayHelper.displayPercent(remainingPercent: remainingPercent)
+            let statusColor = displayHelper.statusColor(remainingPercent: remainingPercent)
+    
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 8) {
+                    if let icon = icon {
+                        Image(systemName: icon)
                             .font(.caption)
                             .foregroundStyle(.tertiary)
-                            .monospacedDigit()
+                            .frame(width: 16)
                     }
-                }
-                
-                if !isUnknown {
-                    Text(String(format: "%.0f%%", displayPercent))
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(statusColor)
-                        .monospacedDigit()
-                } else {
-                    Text("—")
-                        .font(.subheadline)
-                        .foregroundStyle(.tertiary)
-                }
-                
-                if resetTime != "—" && !resetTime.isEmpty {
-                    Text(resetTime)
-                        .font(.caption2)
-                        .foregroundStyle(.tertiary)
-                }
-            }
             
-            if !isUnknown {
-                GeometryReader { proxy in
-                    ZStack(alignment: .leading) {
-                        Capsule()
-                            .fill(Color.primary.opacity(0.06))
-                        Capsule()
-                            .fill(statusColor.gradient)
-                            .frame(width: proxy.size.width * (displayPercent / 100))
+                    Text(name)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .help(tooltip ?? "")
+            
+                    Spacer()
+            
+                    if let used = used {
+                        if let limit = limit, limit > 0 {
+                            Text(String(used) + "/" + String(limit))
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                                .monospacedDigit()
+                        }
+                    }
+            
+                    if !isUnknown {
+                        Text(String(format: "%.0f%%", displayPercent))
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(statusColor)
+                            .monospacedDigit()
+                    } else {
+                        Text("—")
+                            .font(.subheadline)
+                            .foregroundStyle(.tertiary)
+                    }
+            
+                    if resetTime != "—" && !resetTime.isEmpty {
+                        Text(resetTime)
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
                     }
                 }
-                .frame(height: 6)
+        
+                if !isUnknown {
+                    GeometryReader { proxy in
+                        ZStack(alignment: .leading) {
+                            Capsule()
+                                .fill(Color.primary.opacity(0.06))
+                            Capsule()
+                                .fill(statusColor.gradient)
+                                .frame(width: proxy.size.width * (displayPercent / 100))
+                        }
+                    }
+                    .frame(height: 6)
+                }
             }
         }
     }
@@ -1566,27 +1599,29 @@ private struct QuotaLoadingView: View {
     @State private var isAnimating = false
     
     var body: some View {
-        VStack(spacing: 16) {
-            ForEach(0..<2, id: \.self) { _ in
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        RoundedRectangle(cornerRadius: 4, style: .continuous)
+        WithPerceptionTracking {
+            VStack(spacing: 16) {
+                ForEach(0..<2, id: \.self) { _ in
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                                .fill(Color.primary.opacity(0.06))
+                                .frame(width: 100, height: 12)
+                            Spacer()
+                            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                                .fill(Color.primary.opacity(0.06))
+                                .frame(width: 48, height: 12)
+                        }
+                        RoundedRectangle(cornerRadius: 3, style: .continuous)
                             .fill(Color.primary.opacity(0.06))
-                            .frame(width: 100, height: 12)
-                        Spacer()
-                        RoundedRectangle(cornerRadius: 4, style: .continuous)
-                            .fill(Color.primary.opacity(0.06))
-                            .frame(width: 48, height: 12)
+                            .frame(height: 6)
                     }
-                    RoundedRectangle(cornerRadius: 3, style: .continuous)
-                        .fill(Color.primary.opacity(0.06))
-                        .frame(height: 6)
                 }
             }
+            .opacity(isAnimating ? 0.4 : 1)
+            .animation(.easeOut(duration: 0.8).repeatForever(autoreverses: true), value: isAnimating)
+            .onAppear { isAnimating = true }
         }
-        .opacity(isAnimating ? 0.4 : 1)
-        .animation(.easeOut(duration: 0.8).repeatForever(autoreverses: true), value: isAnimating)
-        .onAppear { isAnimating = true }
     }
 }
 

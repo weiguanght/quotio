@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		782F8F9C2EFD797D00CE18C5 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 78D386B12EFBF30500C40FB6 /* Sparkle */; };
+		78E1C0B92F0A3A4D00D1F4A1 /* Perception in Frameworks */ = {isa = PBXBuildFile; productRef = 78E1C0BA2F0A3A4D00D1F4A1 /* Perception */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,6 +44,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				78E1C0B92F0A3A4D00D1F4A1 /* Perception in Frameworks */,
 				782F8F9C2EFD797D00CE18C5 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -97,6 +99,7 @@
 			);
 			name = Quotio;
 			packageProductDependencies = (
+				78E1C0BA2F0A3A4D00D1F4A1 /* Perception */,
 				78D386B12EFBF30500C40FB6 /* Sparkle */,
 			);
 			productName = Quotio;
@@ -130,6 +133,7 @@
 			mainGroup = 78D3868B2EFBF30400C40FB6;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				78E1C0BB2F0A3A4D00D1F4A1 /* XCRemoteSwiftPackageReference "swift-perception" */,
 				78D386B02EFBF30500C40FB6 /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -308,7 +312,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 0.7.10;
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
@@ -356,7 +360,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 0.7.10;
 				PRODUCT_BUNDLE_IDENTIFIER = proseek.io.vn.Quotio;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -399,6 +403,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		78E1C0BB2F0A3A4D00D1F4A1 /* XCRemoteSwiftPackageReference "swift-perception" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-perception";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.3.0;
+			};
+		};
 		78D386B02EFBF30500C40FB6 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/sparkle-project/Sparkle";
@@ -410,6 +422,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		78E1C0BA2F0A3A4D00D1F4A1 /* Perception */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 78E1C0BB2F0A3A4D00D1F4A1 /* XCRemoteSwiftPackageReference "swift-perception" */;
+			productName = Perception;
+		};
 		78D386B12EFBF30500C40FB6 /* Sparkle */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 78D386B02EFBF30500C40FB6 /* XCRemoteSwiftPackageReference "Sparkle" */;

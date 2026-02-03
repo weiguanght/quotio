@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import Perception
 
 struct WarmupSheet: View {
     @Environment(QuotaViewModel.self) private var viewModel
@@ -107,29 +108,31 @@ struct WarmupSheet: View {
     }
     
     var body: some View {
-        VStack(spacing: 20) {
-            headerView
-            
-            Divider()
-            
-            contentView
-            
-            Divider()
-            
-            actionButtons
-        }
-        .padding(24)
-        .frame(width: 380)
-        .task {
-            await loadModelsIfNeeded()
-        }
-        .onChange(of: warmupIsRunning) { _, isRunning in
-            if isRunning {
-                didSeeRunning = true
-            } else if shouldAutoClose, didSeeRunning {
-                shouldAutoClose = false
-                didSeeRunning = false
-                onDismiss()
+        WithPerceptionTracking {
+            VStack(spacing: 20) {
+                headerView
+        
+                Divider()
+        
+                contentView
+        
+                Divider()
+        
+                actionButtons
+            }
+            .padding(24)
+            .frame(width: 380)
+            .task {
+                await loadModelsIfNeeded()
+            }
+            .onChange(of: warmupIsRunning) { _, isRunning in
+                if isRunning {
+                    didSeeRunning = true
+                } else if shouldAutoClose, didSeeRunning {
+                    shouldAutoClose = false
+                    didSeeRunning = false
+                    onDismiss()
+                }
             }
         }
     }

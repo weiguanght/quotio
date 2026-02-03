@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import Perception
 
 /// A unified view component shown when proxy is required but not running
 struct ProxyRequiredView: View {
@@ -27,69 +28,71 @@ struct ProxyRequiredView: View {
     }
     
     var body: some View {
-        VStack(spacing: 24) {
-            // Icon with animated gradient background
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [.blue.opacity(0.15), .purple.opacity(0.15)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+        WithPerceptionTracking {
+            VStack(spacing: 24) {
+                // Icon with animated gradient background
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [.blue.opacity(0.15), .purple.opacity(0.15)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
                         )
-                    )
-                    .frame(width: 100, height: 100)
-                
-                Image(systemName: icon)
-                    .font(.system(size: 40, weight: .medium))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [.blue, .purple],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+                        .frame(width: 100, height: 100)
+            
+                    Image(systemName: icon)
+                        .font(.system(size: 40, weight: .medium))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [.blue, .purple],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
                         )
-                    )
-            }
-            
-            // Text content
-            VStack(spacing: 8) {
-                Text(title)
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                
-                Text(description)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: 300)
-            }
-            
-            // Start button
-            Button {
-                isStarting = true
-                Task {
-                    await onStartProxy()
-                    isStarting = false
                 }
-            } label: {
-                HStack(spacing: 8) {
-                    if isStarting {
-                        SmallProgressView()
-                            .tint(.white)
-                    } else {
-                        Image(systemName: "play.fill")
+        
+                // Text content
+                VStack(spacing: 8) {
+                    Text(title)
+                        .font(.title2)
+                        .fontWeight(.semibold)
+            
+                    Text(description)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 300)
+                }
+        
+                // Start button
+                Button {
+                    isStarting = true
+                    Task {
+                        await onStartProxy()
+                        isStarting = false
                     }
-                    Text("action.startProxy".localized())
+                } label: {
+                    HStack(spacing: 8) {
+                        if isStarting {
+                            SmallProgressView()
+                                .tint(.white)
+                        } else {
+                            Image(systemName: "play.fill")
+                        }
+                        Text("action.startProxy".localized())
+                    }
+                    .frame(minWidth: 140)
                 }
-                .frame(minWidth: 140)
+                .buttonStyle(.borderedProminent)
+                .tint(.blue)
+                .controlSize(.large)
+                .disabled(isStarting)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.blue)
-            .controlSize(.large)
-            .disabled(isStarting)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(40)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(40)
     }
 }
 

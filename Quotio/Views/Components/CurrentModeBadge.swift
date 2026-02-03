@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Perception
 
 /// Compact badge showing current mode in sidebar, clickable to open settings
 struct CurrentModeBadge: View {
@@ -14,50 +15,52 @@ struct CurrentModeBadge: View {
     @State private var isHovered = false
     
     var body: some View {
-        Button {
-            viewModel.currentPage = .settings
-        } label: {
-            HStack(spacing: 8) {
-                // Mode icon
-                Image(systemName: modeManager.currentMode.icon)
-                    .font(.caption)
-                    .foregroundStyle(modeManager.currentMode.color)
-                
-                // Mode name
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(modeName)
+        WithPerceptionTracking {
+            Button {
+                viewModel.currentPage = .settings
+            } label: {
+                HStack(spacing: 8) {
+                    // Mode icon
+                    Image(systemName: modeManager.currentMode.icon)
                         .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundStyle(.primary)
-                        .lineLimit(1)
-                    
-                    // Status subtitle
-                    Text(statusText)
+                        .foregroundStyle(modeManager.currentMode.color)
+            
+                    // Mode name
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(modeName)
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundStyle(.primary)
+                            .lineLimit(1)
+                
+                        // Status subtitle
+                        Text(statusText)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+            
+                    Spacer()
+            
+                    // Chevron indicator
+                    Image(systemName: "chevron.right")
                         .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                        .foregroundStyle(.tertiary)
                 }
-                
-                Spacer()
-                
-                // Chevron indicator
-                Image(systemName: "chevron.right")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 8)
+                .background(backgroundView)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(borderColor, lineWidth: 1)
+                )
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
-            .background(backgroundView)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(borderColor, lineWidth: 1)
-            )
+            .buttonStyle(.plain)
+            .onHover { isHovered = $0 }
+            .help("sidebar.modeBadge.hint".localized())
+            .animation(.easeInOut(duration: 0.15), value: isHovered)
         }
-        .buttonStyle(.plain)
-        .onHover { isHovered = $0 }
-        .help("sidebar.modeBadge.hint".localized())
-        .animation(.easeInOut(duration: 0.15), value: isHovered)
     }
     
     private var modeName: String {

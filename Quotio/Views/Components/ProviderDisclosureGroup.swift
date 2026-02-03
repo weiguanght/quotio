@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Perception
 
 // MARK: - Provider Disclosure Group
 
@@ -27,19 +28,21 @@ struct ProviderDisclosureGroup: View {
     }
     
     var body: some View {
-        DisclosureGroup(isExpanded: $isExpanded) {
-            ForEach(accounts) { account in
-                AccountRow(
-                    account: account,
-                    onDelete: onDeleteAccount != nil ? { onDeleteAccount?(account) } : nil,
-                    onEdit: onEditAccount != nil ? { onEditAccount?(account) } : nil,
-                    onSwitch: onSwitchAccount != nil ? { onSwitchAccount?(account) } : nil,
-                    isActiveInIDE: isAccountActive?(account) ?? false
-                )
-                .padding(.leading, 4)
+        WithPerceptionTracking {
+            DisclosureGroup(isExpanded: $isExpanded) {
+                ForEach(accounts) { account in
+                    AccountRow(
+                        account: account,
+                        onDelete: onDeleteAccount != nil ? { onDeleteAccount?(account) } : nil,
+                        onEdit: onEditAccount != nil ? { onEditAccount?(account) } : nil,
+                        onSwitch: onSwitchAccount != nil ? { onSwitchAccount?(account) } : nil,
+                        isActiveInIDE: isAccountActive?(account) ?? false
+                    )
+                    .padding(.leading, 4)
+                }
+            } label: {
+                providerHeader
             }
-        } label: {
-            providerHeader
         }
     }
     

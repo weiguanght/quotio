@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Perception
 
 struct IDEScanSheet: View {
     @Environment(\.dismiss) private var dismiss
@@ -21,35 +22,37 @@ struct IDEScanSheet: View {
     let onScanComplete: () -> Void
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Header
-            headerSection
-            
-            Divider()
-            
-            // Content
-            ScrollView {
-                VStack(spacing: 20) {
-                    privacyNoticeSection
-                    scanOptionsSection
-                    
-                    if scanComplete {
-                        scanResultSection
+        WithPerceptionTracking {
+            VStack(spacing: 0) {
+                // Header
+                headerSection
+        
+                Divider()
+        
+                // Content
+                ScrollView {
+                    VStack(spacing: 20) {
+                        privacyNoticeSection
+                        scanOptionsSection
+                
+                        if scanComplete {
+                            scanResultSection
+                        }
+                
+                        if let error = errorMessage {
+                            errorSection(error)
+                        }
                     }
-                    
-                    if let error = errorMessage {
-                        errorSection(error)
-                    }
+                    .padding(24)
                 }
-                .padding(24)
+        
+                Divider()
+        
+                // Footer buttons
+                footerSection
             }
-            
-            Divider()
-            
-            // Footer buttons
-            footerSection
+            .frame(width: 520, height: 520)
         }
-        .frame(width: 520, height: 520)
     }
     
     // MARK: - Header

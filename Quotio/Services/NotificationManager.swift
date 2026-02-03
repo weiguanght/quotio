@@ -5,6 +5,7 @@
 
 import Foundation
 import UserNotifications
+import Perception
 
 /// Notification types for tracking which notifications have been sent
 enum NotificationType: String {
@@ -21,7 +22,7 @@ enum NotificationType: String {
 
 /// Manages macOS notifications for quota alerts, cooling status, and proxy crashes
 @MainActor
-@Observable
+@Perceptible
 final class NotificationManager {
     static let shared = NotificationManager()
     

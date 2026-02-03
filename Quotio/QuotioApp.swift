@@ -8,6 +8,7 @@ import SwiftUI
 import ServiceManagement
 #if canImport(Sparkle)
 import Sparkle
+import Perception
 #endif
 
 // MARK: - App Bootstrap (Singleton for headless initialization)
@@ -365,125 +366,127 @@ struct ContentView: View {
     @State private var modeManager = OperatingModeManager.shared
     
     var body: some View {
-        @Bindable var vm = viewModel
+        WithPerceptionTracking {
+            @Perception.Bindable var vm = viewModel
         
-        NavigationSplitView {
-            VStack(spacing: 0) {
-                List(selection: $vm.currentPage) {
-                    Section {
-                        // Always visible
-                        Label("nav.dashboard".localized(), systemImage: "gauge.with.dots.needle.33percent")
-                            .tag(NavigationPage.dashboard)
-                        
-                        Label("nav.quota".localized(), systemImage: "chart.bar.fill")
-                            .tag(NavigationPage.quota)
-                        
-                        Label(modeManager.isMonitorMode ? "nav.accounts".localized() : "nav.providers".localized(), 
-                              systemImage: "person.2.badge.key")
-                            .tag(NavigationPage.providers)
-                        
-                        // Proxy mode only (local or remote)
-                        if modeManager.isProxyMode {
-                            HStack(spacing: 6) {
-                                Label("nav.fallback".localized(), systemImage: "arrow.triangle.branch")
-                                ExperimentalBadge()
-                            }
-                            .tag(NavigationPage.fallback)
-
-                            if modeManager.currentMode.supportsAgentConfig {
-                                Label("nav.agents".localized(), systemImage: "terminal")
-                                    .tag(NavigationPage.agents)
-                            }
-                            
-                            Label("nav.apiKeys".localized(), systemImage: "key.horizontal")
-                                .tag(NavigationPage.apiKeys)
-                            
-                            if modeManager.isLocalProxyMode && loggingToFile {
-                                Label("nav.logs".localized(), systemImage: "doc.text")
-                                    .tag(NavigationPage.logs)
-                            }
-                        }
-                        
-                        Label("nav.settings".localized(), systemImage: "gearshape")
-                            .tag(NavigationPage.settings)
-                        
-                        Label("nav.about".localized(), systemImage: "info.circle")
-                            .tag(NavigationPage.about)
-                    }
-                }
-                
-                // Control section at bottom - current mode badge + status
+            NavigationSplitView {
                 VStack(spacing: 0) {
-                    Divider()
-                    
-                    // Current Mode Badge (replaces ModeSwitcherRow)
-                    CurrentModeBadge()
-                        .padding(.horizontal, 16)
-                        .padding(.top, 10)
-                        .padding(.bottom, 6)
-                    
-                    // Status row - different per mode
-                    Group {
-                        if modeManager.isLocalProxyMode {
-                            ProxyStatusRow(viewModel: viewModel)
-                        } else if modeManager.isRemoteProxyMode {
-                            RemoteStatusRow()
-                        } else {
-                            QuotaRefreshStatusRow(viewModel: viewModel)
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 10)
-                }
-                .background(.regularMaterial)
-            }
-            .navigationTitle("Quotio")
-            .toolbar {
-                ToolbarItem {
-                    if modeManager.isLocalProxyMode {
-                        // Local proxy mode: proxy controls
-                        if viewModel.proxyManager.isStarting {
-                            SmallProgressView()
-                        } else {
-                            Button {
-                                Task { await viewModel.toggleProxy() }
-                            } label: {
-                                Image(systemName: viewModel.proxyManager.proxyStatus.running ? "stop.fill" : "play.fill")
+                    List(selection: $vm.currentPage) {
+                        Section {
+                            // Always visible
+                            Label("nav.dashboard".localized(), systemImage: "gauge.with.dots.needle.33percent")
+                                .tag(NavigationPage.dashboard)
+                        
+                            Label("nav.quota".localized(), systemImage: "chart.bar.fill")
+                                .tag(NavigationPage.quota)
+                        
+                            Label(modeManager.isMonitorMode ? "nav.accounts".localized() : "nav.providers".localized(), 
+                                  systemImage: "person.2.badge.key")
+                                .tag(NavigationPage.providers)
+                        
+                            // Proxy mode only (local or remote)
+                            if modeManager.isProxyMode {
+                                HStack(spacing: 6) {
+                                    Label("nav.fallback".localized(), systemImage: "arrow.triangle.branch")
+                                    ExperimentalBadge()
+                                }
+                                .tag(NavigationPage.fallback)
+
+                                if modeManager.currentMode.supportsAgentConfig {
+                                    Label("nav.agents".localized(), systemImage: "terminal")
+                                        .tag(NavigationPage.agents)
+                                }
+                            
+                                Label("nav.apiKeys".localized(), systemImage: "key.horizontal")
+                                    .tag(NavigationPage.apiKeys)
+                            
+                                if modeManager.isLocalProxyMode && loggingToFile {
+                                    Label("nav.logs".localized(), systemImage: "doc.text")
+                                        .tag(NavigationPage.logs)
+                                }
                             }
-                            .help(viewModel.proxyManager.proxyStatus.running ? "action.stopProxy".localized() : "action.startProxy".localized())
+                        
+                            Label("nav.settings".localized(), systemImage: "gearshape")
+                                .tag(NavigationPage.settings)
+                        
+                            Label("nav.about".localized(), systemImage: "info.circle")
+                                .tag(NavigationPage.about)
                         }
-                    } else {
-                        // Monitor or remote mode: refresh button
-                        Button {
-                            Task { await viewModel.refreshQuotasDirectly() }
-                        } label: {
-                            Image(systemName: "arrow.clockwise")
+                    }
+                
+                    // Control section at bottom - current mode badge + status
+                    VStack(spacing: 0) {
+                        Divider()
+                    
+                        // Current Mode Badge (replaces ModeSwitcherRow)
+                        CurrentModeBadge()
+                            .padding(.horizontal, 16)
+                            .padding(.top, 10)
+                            .padding(.bottom, 6)
+                    
+                        // Status row - different per mode
+                        Group {
+                            if modeManager.isLocalProxyMode {
+                                ProxyStatusRow(viewModel: viewModel)
+                            } else if modeManager.isRemoteProxyMode {
+                                RemoteStatusRow()
+                            } else {
+                                QuotaRefreshStatusRow(viewModel: viewModel)
+                            }
                         }
-                        .help("action.refreshQuota".localized())
-                        .disabled(viewModel.isLoadingQuotas)
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 10)
+                    }
+                    .background(.regularMaterial)
+                }
+                .navigationTitle("Quotio")
+                .toolbar {
+                    ToolbarItem {
+                        if modeManager.isLocalProxyMode {
+                            // Local proxy mode: proxy controls
+                            if viewModel.proxyManager.isStarting {
+                                SmallProgressView()
+                            } else {
+                                Button {
+                                    Task { await viewModel.toggleProxy() }
+                                } label: {
+                                    Image(systemName: viewModel.proxyManager.proxyStatus.running ? "stop.fill" : "play.fill")
+                                }
+                                .help(viewModel.proxyManager.proxyStatus.running ? "action.stopProxy".localized() : "action.startProxy".localized())
+                            }
+                        } else {
+                            // Monitor or remote mode: refresh button
+                            Button {
+                                Task { await viewModel.refreshQuotasDirectly() }
+                            } label: {
+                                Image(systemName: "arrow.clockwise")
+                            }
+                            .help("action.refreshQuota".localized())
+                            .disabled(viewModel.isLoadingQuotas)
+                        }
                     }
                 }
-            }
-        } detail: {
-            switch viewModel.currentPage {
-            case .dashboard:
-                DashboardScreen()
-            case .quota:
-                QuotaScreen()
-            case .providers:
-                ProvidersScreen()
-            case .fallback:
-                FallbackScreen()
-            case .agents:
-                AgentSetupScreen()
-            case .apiKeys:
-                APIKeysScreen()
-            case .logs:
-                LogsScreen()
-            case .settings:
-                SettingsScreen()
-            case .about:
-                AboutScreen()
+            } detail: {
+                switch viewModel.currentPage {
+                case .dashboard:
+                    DashboardScreen()
+                case .quota:
+                    QuotaScreen()
+                case .providers:
+                    ProvidersScreen()
+                case .fallback:
+                    FallbackScreen()
+                case .agents:
+                    AgentSetupScreen()
+                case .apiKeys:
+                    APIKeysScreen()
+                case .logs:
+                    LogsScreen()
+                case .settings:
+                    SettingsScreen()
+                case .about:
+                    AboutScreen()
+                }
             }
         }
     }
@@ -496,21 +499,23 @@ struct RemoteStatusRow: View {
     @State private var modeManager = OperatingModeManager.shared
     
     var body: some View {
-        HStack {
-            Circle()
-                .fill(statusColor)
-                .frame(width: 8, height: 8)
+        WithPerceptionTracking {
+            HStack {
+                Circle()
+                    .fill(statusColor)
+                    .frame(width: 8, height: 8)
             
-            Text(statusText)
-                .font(.caption)
-            
-            Spacer()
-            
-            if let config = modeManager.remoteConfig {
-                Text(config.displayName)
+                Text(statusText)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+            
+                Spacer()
+            
+                if let config = modeManager.remoteConfig {
+                    Text(config.displayName)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
             }
         }
     }
@@ -539,28 +544,30 @@ struct ProxyStatusRow: View {
     let viewModel: QuotaViewModel
     
     var body: some View {
-        HStack {
-            if viewModel.proxyManager.isStarting {
-                SmallProgressView(size: 8)
-            } else {
-                Circle()
-                    .fill(viewModel.proxyManager.proxyStatus.running ? .green : .gray)
-                    .frame(width: 8, height: 8)
-            }
+        WithPerceptionTracking {
+            HStack {
+                if viewModel.proxyManager.isStarting {
+                    SmallProgressView(size: 8)
+                } else {
+                    Circle()
+                        .fill(viewModel.proxyManager.proxyStatus.running ? .green : .gray)
+                        .frame(width: 8, height: 8)
+                }
             
-            if viewModel.proxyManager.isStarting {
-                Text("status.starting".localized())
+                if viewModel.proxyManager.isStarting {
+                    Text("status.starting".localized())
+                        .font(.caption)
+                } else {
+                    Text(viewModel.proxyManager.proxyStatus.running ? "status.running".localized() : "status.stopped".localized())
+                        .font(.caption)
+                }
+            
+                Spacer()
+            
+                Text(":" + String(viewModel.proxyManager.port))
                     .font(.caption)
-            } else {
-                Text(viewModel.proxyManager.proxyStatus.running ? "status.running".localized() : "status.stopped".localized())
-                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
-            
-            Spacer()
-            
-            Text(":" + String(viewModel.proxyManager.port))
-                .font(.caption)
-                .foregroundStyle(.secondary)
         }
     }
 }
@@ -570,28 +577,30 @@ struct QuotaRefreshStatusRow: View {
     let viewModel: QuotaViewModel
     
     var body: some View {
-        HStack {
-            if viewModel.isLoadingQuotas {
-                SmallProgressView(size: 8)
-                Text("status.refreshing".localized())
-                    .font(.caption)
-            } else {
-                Image(systemName: "clock")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                
-                if let lastRefresh = viewModel.lastQuotaRefreshTime {
-                    Text("status.updatedAgo \(lastRefresh, style: .relative)")
+        WithPerceptionTracking {
+            HStack {
+                if viewModel.isLoadingQuotas {
+                    SmallProgressView(size: 8)
+                    Text("status.refreshing".localized())
                         .font(.caption)
-                        .foregroundStyle(.secondary)
                 } else {
-                    Text("status.notRefreshed".localized())
-                        .font(.caption)
+                    Image(systemName: "clock")
+                        .font(.caption2)
                         .foregroundStyle(.secondary)
+                
+                    if let lastRefresh = viewModel.lastQuotaRefreshTime {
+                        Text("status.updatedAgo \(lastRefresh, style: .relative)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("status.notRefreshed".localized())
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
-            }
             
-            Spacer()
+                Spacer()
+            }
         }
     }
 }

@@ -14,10 +14,11 @@
 //
 
 import Foundation
+import Perception
 
 /// Manages versioned proxy binary storage.
 @MainActor
-@Observable
+@Perceptible
 final class ProxyStorageManager {
     static let shared = ProxyStorageManager()
     

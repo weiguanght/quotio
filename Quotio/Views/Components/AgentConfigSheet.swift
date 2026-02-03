@@ -4,9 +4,10 @@
 //
 
 import SwiftUI
+import Perception
 
 struct AgentConfigSheet: View {
-    @Bindable var viewModel: AgentSetupViewModel
+    @Perception.Bindable var viewModel: AgentSetupViewModel
     let agent: CLIAgent
     
     @Environment(\.dismiss) private var dismiss
@@ -27,45 +28,47 @@ struct AgentConfigSheet: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            headerView
-            
-            Divider()
-            
-            ScrollView {
-                VStack(spacing: 16) {
-                    if hasResult {
-                        resultView
-                    } else {
-                        configurationView
+        WithPerceptionTracking {
+            VStack(spacing: 0) {
+                headerView
+        
+                Divider()
+        
+                ScrollView {
+                    VStack(spacing: 16) {
+                        if hasResult {
+                            resultView
+                        } else {
+                            configurationView
+                        }
                     }
+                    .padding(20)
                 }
-                .padding(20)
+                .scrollIndicators(.automatic, axes: .vertical)
+        
+                Divider()
+        
+                footerView
             }
-            .scrollIndicators(.automatic, axes: .vertical)
-            
-            Divider()
-            
-            footerView
-        }
-        .frame(width: 720, height: 600)
-        .onAppear {
-            viewModel.resetSheetState()
-            if isManualMode {
-                generatePreview()
+            .frame(width: 720, height: 600)
+            .onAppear {
+                viewModel.resetSheetState()
+                if isManualMode {
+                    generatePreview()
+                }
             }
-        }
-        .onChange(of: viewModel.configurationMode) { _, newMode in
-            if newMode == .manual {
-                generatePreview()
-            } else {
-                previewConfig = nil
+            .onChange(of: viewModel.configurationMode) { _, newMode in
+                if newMode == .manual {
+                    generatePreview()
+                } else {
+                    previewConfig = nil
+                }
             }
-        }
-        .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
-            Button("OK") { viewModel.errorMessage = nil }
-        } message: {
-            Text(viewModel.errorMessage ?? "")
+            .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
+                Button("OK") { viewModel.errorMessage = nil }
+            } message: {
+                Text(viewModel.errorMessage ?? "")
+            }
         }
     }
     
@@ -679,27 +682,29 @@ private struct ModeButton: View {
     let action: () -> Void
     
     var body: some View {
-        Button {
-            action()
-        } label: {
-            VStack(spacing: 6) {
-                Image(systemName: mode.icon)
-                    .font(.title3)
-                Text(mode.displayName)
-                    .font(.caption)
-                    .fontWeight(.medium)
+        WithPerceptionTracking {
+            Button {
+                action()
+            } label: {
+                VStack(spacing: 6) {
+                    Image(systemName: mode.icon)
+                        .font(.title3)
+                    Text(mode.displayName)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(isSelected ? Color.accentColor.opacity(0.15) : Color(.controlBackgroundColor))
+                .foregroundStyle(isSelected ? .primary : .secondary)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(isSelected ? Color.accentColor : Color.secondary.opacity(0.3), lineWidth: isSelected ? 2 : 1)
+                )
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(isSelected ? Color.accentColor.opacity(0.15) : Color(.controlBackgroundColor))
-            .foregroundStyle(isSelected ? .primary : .secondary)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(isSelected ? Color.accentColor : Color.secondary.opacity(0.3), lineWidth: isSelected ? 2 : 1)
-            )
+            .buttonStyle(.borderless)
         }
-        .buttonStyle(.borderless)
     }
 }
 
@@ -709,27 +714,29 @@ private struct SetupModeButton: View {
     let action: () -> Void
     
     var body: some View {
-        Button {
-            action()
-        } label: {
-            VStack(spacing: 6) {
-                Image(systemName: setup.icon)
-                    .font(.title3)
-                Text(setup.displayName)
-                    .font(.caption)
-                    .fontWeight(.medium)
+        WithPerceptionTracking {
+            Button {
+                action()
+            } label: {
+                VStack(spacing: 6) {
+                    Image(systemName: setup.icon)
+                        .font(.title3)
+                    Text(setup.displayName)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(isSelected ? Color.accentColor.opacity(0.15) : Color(.controlBackgroundColor))
+                .foregroundStyle(isSelected ? .primary : .secondary)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(isSelected ? Color.accentColor : Color.secondary.opacity(0.3), lineWidth: isSelected ? 2 : 1)
+                )
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(isSelected ? Color.accentColor.opacity(0.15) : Color(.controlBackgroundColor))
-            .foregroundStyle(isSelected ? .primary : .secondary)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(isSelected ? Color.accentColor : Color.secondary.opacity(0.3), lineWidth: isSelected ? 2 : 1)
-            )
+            .buttonStyle(.borderless)
         }
-        .buttonStyle(.borderless)
     }
 }
 
@@ -738,26 +745,28 @@ private struct BackupButton: View {
     let action: () -> Void
     
     var body: some View {
-        Button {
-            action()
-        } label: {
-            VStack(spacing: 4) {
-                Image(systemName: "clock.arrow.circlepath")
-                    .font(.callout)
-                Text(backup.displayName)
-                    .font(.caption2)
-                    .lineLimit(1)
+        WithPerceptionTracking {
+            Button {
+                action()
+            } label: {
+                VStack(spacing: 4) {
+                    Image(systemName: "clock.arrow.circlepath")
+                        .font(.callout)
+                    Text(backup.displayName)
+                        .font(.caption2)
+                        .lineLimit(1)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(Color(.controlBackgroundColor))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                )
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(Color(.controlBackgroundColor))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
-            )
+            .buttonStyle(.borderless)
         }
-        .buttonStyle(.borderless)
     }
 }
 
@@ -775,27 +784,29 @@ private struct StorageOptionButton: View {
     }
     
     var body: some View {
-        Button {
-            action()
-        } label: {
-            VStack(spacing: 6) {
-                Image(systemName: option.icon)
-                    .font(.title3)
-                Text(displayName)
-                    .font(.caption)
-                    .fontWeight(.medium)
+        WithPerceptionTracking {
+            Button {
+                action()
+            } label: {
+                VStack(spacing: 6) {
+                    Image(systemName: option.icon)
+                        .font(.title3)
+                    Text(displayName)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(isSelected ? Color.accentColor.opacity(0.15) : Color(.controlBackgroundColor))
+                .foregroundStyle(isSelected ? .primary : .secondary)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(isSelected ? Color.accentColor : Color.secondary.opacity(0.3), lineWidth: isSelected ? 2 : 1)
+                )
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(isSelected ? Color.accentColor.opacity(0.15) : Color(.controlBackgroundColor))
-            .foregroundStyle(isSelected ? .primary : .secondary)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(isSelected ? Color.accentColor : Color.secondary.opacity(0.3), lineWidth: isSelected ? 2 : 1)
-            )
+            .buttonStyle(.borderless)
         }
-        .buttonStyle(.borderless)
     }
 }
 
@@ -805,19 +816,21 @@ private struct InfoRow: View {
     var isMasked: Bool = false
     
     var body: some View {
-        HStack {
-            Text(label)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            
-            Spacer()
-            
-            Text(value)
-                .font(.caption)
-                .fontDesign(.monospaced)
-                .foregroundStyle(isMasked ? .secondary : .primary)
-                .lineLimit(1)
-                .truncationMode(.middle)
+        WithPerceptionTracking {
+            HStack {
+                Text(label)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+        
+                Spacer()
+        
+                Text(value)
+                    .font(.caption)
+                    .fontDesign(.monospaced)
+                    .foregroundStyle(isMasked ? .secondary : .primary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            }
         }
     }
 }
@@ -843,35 +856,37 @@ private struct ModelSlotRow: View {
     }
     
     var body: some View {
-        HStack {
-            Text(slot.displayName)
-                .font(.caption)
-                .fontWeight(.medium)
+        WithPerceptionTracking {
+            HStack {
+                Text(slot.displayName)
+                    .font(.caption)
+                    .fontWeight(.medium)
+        
+                Spacer(minLength: 12)
+        
+                Picker("", selection: Binding(
+                    get: { effectiveSelection },
+                    set: { onModelChange($0) }
+                )) {
+                    let providers = Set(availableModels.map { $0.provider }).sorted()
             
-            Spacer(minLength: 12)
-            
-            Picker("", selection: Binding(
-                get: { effectiveSelection },
-                set: { onModelChange($0) }
-            )) {
-                let providers = Set(availableModels.map { $0.provider }).sorted()
-                
-                ForEach(providers, id: \.self) { provider in
-                    Section(header: Text(provider.capitalized)) {
-                        ForEach(availableModels.filter { $0.provider == provider }) { model in
-                            Text(model.displayName)
-                                .tag(model.name)
+                    ForEach(providers, id: \.self) { provider in
+                        Section(header: Text(provider.capitalized)) {
+                            ForEach(availableModels.filter { $0.provider == provider }) { model in
+                                Text(model.displayName)
+                                    .tag(model.name)
+                            }
                         }
                     }
                 }
+                .pickerStyle(.menu)
+                .frame(maxWidth: 280)
             }
-            .pickerStyle(.menu)
-            .frame(maxWidth: 280)
-        }
-        .onAppear {
-            // Trigger fallback update if model is empty or not in available list
-            if selectedModel.isEmpty || !availableModels.contains(where: { $0.name == selectedModel }) {
-                onModelChange(effectiveSelection)
+            .onAppear {
+                // Trigger fallback update if model is empty or not in available list
+                if selectedModel.isEmpty || !availableModels.contains(where: { $0.name == selectedModel }) {
+                    onModelChange(effectiveSelection)
+                }
             }
         }
     }
@@ -881,26 +896,28 @@ private struct TestResultView: View {
     let result: ConnectionTestResult
     
     var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: result.success ? "checkmark.circle.fill" : "xmark.circle.fill")
-                .foregroundStyle(result.success ? .green : .red)
-            
-            Text(result.message)
-                .font(.caption)
-                .foregroundStyle(result.success ? .green : .red)
-            
-            Spacer()
-            
-            if let latency = result.latencyMs {
-                Text("\(latency)ms")
+        WithPerceptionTracking {
+            HStack(spacing: 8) {
+                Image(systemName: result.success ? "checkmark.circle.fill" : "xmark.circle.fill")
+                    .foregroundStyle(result.success ? .green : .red)
+        
+                Text(result.message)
                     .font(.caption)
-                    .fontDesign(.monospaced)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(result.success ? .green : .red)
+        
+                Spacer()
+        
+                if let latency = result.latencyMs {
+                    Text("\(latency)ms")
+                        .font(.caption)
+                        .fontDesign(.monospaced)
+                        .foregroundStyle(.secondary)
+                }
             }
+            .padding(10)
+            .background(result.success ? Color.green.opacity(0.1) : Color.red.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
-        .padding(10)
-        .background(result.success ? Color.green.opacity(0.1) : Color.red.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 }
 
@@ -910,22 +927,24 @@ private struct FilePathRow: View {
     let path: String
     
     var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: icon)
-                .foregroundStyle(.secondary)
-                .frame(width: 18)
-            
-            Text(label)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .frame(width: 45, alignment: .leading)
-            
-            Text(path)
-                .font(.caption)
-                .fontDesign(.monospaced)
-                .foregroundStyle(.primary)
-                .lineLimit(1)
-                .truncationMode(.middle)
+        WithPerceptionTracking {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 18)
+        
+                Text(label)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 45, alignment: .leading)
+        
+                Text(path)
+                    .font(.caption)
+                    .fontDesign(.monospaced)
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            }
         }
     }
 }
@@ -935,48 +954,50 @@ private struct RawConfigView: View {
     let onCopy: () -> Void
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                if let targetPath = config.targetPath {
-                    Text(targetPath)
-                        .font(.caption)
-                        .fontDesign(.monospaced)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-                }
-                
-                Spacer()
-                
-                Text(config.format.rawValue.uppercased())
-                    .font(.caption2)
-                    .fontWeight(.medium)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Color.blue.opacity(0.1))
-                    .foregroundStyle(.blue)
-                    .clipShape(Capsule())
-                
-                Button {
-                    onCopy()
-                } label: {
-                    Image(systemName: "doc.on.doc")
-                        .font(.caption)
-                }
-                .buttonStyle(.borderless)
-            }
+        WithPerceptionTracking {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    if let targetPath = config.targetPath {
+                        Text(targetPath)
+                            .font(.caption)
+                            .fontDesign(.monospaced)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
             
-            ScrollView {
-                Text(config.content)
-                    .font(.system(size: 11, design: .monospaced))
-                    .textSelection(.enabled)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    Spacer()
+            
+                    Text(config.format.rawValue.uppercased())
+                        .font(.caption2)
+                        .fontWeight(.medium)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.blue.opacity(0.1))
+                        .foregroundStyle(.blue)
+                        .clipShape(Capsule())
+            
+                    Button {
+                        onCopy()
+                    } label: {
+                        Image(systemName: "doc.on.doc")
+                            .font(.caption)
+                    }
+                    .buttonStyle(.borderless)
+                }
+        
+                ScrollView {
+                    Text(config.content)
+                        .font(.system(size: 11, design: .monospaced))
+                        .textSelection(.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .scrollIndicators(.automatic, axes: .vertical)
+                .frame(minHeight: 150, maxHeight: 320)
+                .padding(10)
+                .background(Color.black.opacity(0.03))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
             }
-            .scrollIndicators(.automatic, axes: .vertical)
-            .frame(minHeight: 150, maxHeight: 320)
-            .padding(10)
-            .background(Color.black.opacity(0.03))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
 }

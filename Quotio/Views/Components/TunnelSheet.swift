@@ -7,6 +7,7 @@
 
 import SwiftUI
 import AppKit
+import Perception
 
 struct TunnelSheet: View {
     @Environment(\.dismiss) private var dismiss
@@ -18,40 +19,42 @@ struct TunnelSheet: View {
     @State private var isHoveringCopy = false
     
     var body: some View {
-        VStack(spacing: 0) {
-            headerView
-                .background(Color(nsColor: .windowBackgroundColor))
-            
-            Divider()
-            
-            ScrollView {
-                VStack(spacing: 24) {
-                    if !tunnelManager.installation.isInstalled {
-                        installationBanner
-                    } else {
-                        statusSection
-                        
-                        if tunnelManager.tunnelState.isActive {
-                            publicUrlSection
+        WithPerceptionTracking {
+            VStack(spacing: 0) {
+                headerView
+                    .background(Color(nsColor: .windowBackgroundColor))
+        
+                Divider()
+        
+                ScrollView {
+                    VStack(spacing: 24) {
+                        if !tunnelManager.installation.isInstalled {
+                            installationBanner
+                        } else {
+                            statusSection
+                    
+                            if tunnelManager.tunnelState.isActive {
+                                publicUrlSection
+                            }
+                    
+                            if let error = tunnelManager.tunnelState.errorMessage {
+                                errorSection(error)
+                            }
+                    
+                            infoSection
                         }
-                        
-                        if let error = tunnelManager.tunnelState.errorMessage {
-                            errorSection(error)
-                        }
-                        
-                        infoSection
                     }
+                    .padding(24)
                 }
-                .padding(24)
+                .background(Color(nsColor: .controlBackgroundColor))
+        
+                Divider()
+        
+                footerView
+                    .background(Color(nsColor: .windowBackgroundColor))
             }
-            .background(Color(nsColor: .controlBackgroundColor))
-            
-            Divider()
-            
-            footerView
-                .background(Color(nsColor: .windowBackgroundColor))
+            .frame(width: 520, height: 450)
         }
-        .frame(width: 520, height: 450)
     }
     
     // MARK: - Components

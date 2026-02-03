@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Perception
 
 struct WarpConnectionSheet: View {
     @Environment(\.dismiss) private var dismiss
@@ -21,62 +22,64 @@ struct WarpConnectionSheet: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            headerView
-            
-            Divider()
-            
-            VStack(alignment: .leading, spacing: 20) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("customProviders.providerName".localized())
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    
-                    TextField("warp.name.placeholder".localized(), text: $name)
-                        .textFieldStyle(.roundedBorder)
-                }
-                
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text("warp.token.label".localized())
+        WithPerceptionTracking {
+            VStack(spacing: 0) {
+                headerView
+        
+                Divider()
+        
+                VStack(alignment: .leading, spacing: 20) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("customProviders.providerName".localized())
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
-                        
-                        Spacer()
-                        
-                        if let docsURL = URL(string: "https://docs.warp.dev/platform/cli#generating-api-keys") {
-                            Link(destination: docsURL) {
-                                HStack(spacing: 4) {
-                                    Text("warp.token.get".localized())
-                                    Image(systemName: "arrow.up.right")
+                
+                        TextField("warp.name.placeholder".localized(), text: $name)
+                            .textFieldStyle(.roundedBorder)
+                    }
+            
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("warp.token.label".localized())
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                    
+                            Spacer()
+                    
+                            if let docsURL = URL(string: "https://docs.warp.dev/platform/cli#generating-api-keys") {
+                                Link(destination: docsURL) {
+                                    HStack(spacing: 4) {
+                                        Text("warp.token.get".localized())
+                                        Image(systemName: "arrow.up.right")
+                                    }
+                                    .font(.caption)
                                 }
-                                .font(.caption)
                             }
                         }
-                    }
-                    
-                    SecureField("warp.token.placeholder".localized(), text: $tokenString)
-                        .textFieldStyle(.roundedBorder)
-                    
-                    Text("warp.token.description".localized())
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
                 
-                Spacer()
+                        SecureField("warp.token.placeholder".localized(), text: $tokenString)
+                            .textFieldStyle(.roundedBorder)
+                
+                        Text("warp.token.description".localized())
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+            
+                    Spacer()
+                }
+                .padding(24)
+        
+                Divider()
+        
+                footerView
             }
-            .padding(24)
-            
-            Divider()
-            
-            footerView
-        }
-        .frame(width: 450, height: 350)
-        .onAppear {
-            if let token = token {
-                name = token.name
-                tokenString = token.token
+            .frame(width: 450, height: 350)
+            .onAppear {
+                if let token = token {
+                    name = token.name
+                    tokenString = token.token
+                }
             }
         }
     }

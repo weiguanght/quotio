@@ -8,10 +8,11 @@
 
 import Foundation
 import AppKit
+import Perception
 
 /// Service for tracking API request history with persistence
 @MainActor
-@Observable
+@Perceptible
 final class RequestTracker {
     
     // MARK: - Singleton

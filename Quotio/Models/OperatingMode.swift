@@ -8,6 +8,7 @@
 
 import Foundation
 import SwiftUI
+import Perception
 
 // MARK: - Operating Mode
 
@@ -157,7 +158,7 @@ enum OperatingMode: String, Codable, CaseIterable, Identifiable, Sendable {
 
 /// Singleton manager for operating mode state
 @MainActor
-@Observable
+@Perceptible
 final class OperatingModeManager {
     static let shared = OperatingModeManager()
     

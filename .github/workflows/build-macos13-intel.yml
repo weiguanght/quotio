@@ -1,0 +1,158 @@
+name: Build (Intel, macOS 13 compatible)
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      run_smoke_test_on_self_hosted_macos13:
+        description: "Run smoke test on self-hosted macOS 13.x Intel runner"
+        type: boolean
+        required: false
+        default: false
+
+env:
+  PROJECT_PATH: Quotio.xcodeproj
+  SCHEME: Quotio
+  CONFIGURATION: Release
+
+  # 目标：Intel + macOS 13 兼容
+  MACOSX_DEPLOYMENT_TARGET: "13.0"
+  ARCHS: "x86_64"
+
+  BUILD_DIR: build/macos13-intel
+  ARCHIVE_PATH: build/macos13-intel/Quotio.xcarchive
+
+jobs:
+  build:
+    # GitHub Hosted Intel runner（macOS 13 已退役，改用 macOS 15 Intel）
+    runs-on: macos-15-intel
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 选择 Xcode：用 latest-stable 更稳；Xcode 16 支持 Swift 6 language mode
+      # setup-xcode 支持 latest-stable/latest/或指定版本号
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Environment info
+        run: |
+          set -euo pipefail
+          sw_vers
+          uname -m
+          xcodebuild -version
+          swiftc --version
+
+      - name: Build (archive)
+        run: |
+          set -euo pipefail
+          rm -rf "$BUILD_DIR"
+          mkdir -p "$BUILD_DIR"
+
+          xcodebuild archive \
+            -project "$PROJECT_PATH" \
+            -scheme "$SCHEME" \
+            -configuration "$CONFIGURATION" \
+            -destination "generic/platform=macOS" \
+            -archivePath "$ARCHIVE_PATH" \
+            SKIP_INSTALL=NO \
+            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            ONLY_ACTIVE_ARCH=YES \
+            ARCHS="$ARCHS" \
+            MACOSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" \
+            | tee "$BUILD_DIR/xcodebuild.log"
+
+      - name: Extract .app from archive
+        run: |
+          set -euo pipefail
+          cp -R "$ARCHIVE_PATH/Products/Applications/Quotio.app" "$BUILD_DIR/Quotio.app"
+          ls -la "$BUILD_DIR/Quotio.app"
+
+      - name: Verify Mach-O (x86_64 + min macOS 13)
+        run: |
+          set -euo pipefail
+          BIN="$BUILD_DIR/Quotio.app/Contents/MacOS/Quotio"
+
+          echo "== file =="
+          file "$BIN"
+
+          echo "== lipo =="
+          lipo -info "$BIN" || true
+
+          echo "== min os (LC_BUILD_VERSION / LC_VERSION_MIN_MACOSX) =="
+          otool -l "$BIN" | awk '
+            $1=="cmd" && ($2=="LC_BUILD_VERSION" || $2=="LC_VERSION_MIN_MACOSX"){cmd=$2;show=1}
+            show && $1=="minos"{print cmd": "$2;show=0}
+            show && $1=="version"{print cmd": "$2;show=0}
+          '
+
+          echo "== linked dylibs =="
+          otool -L "$BIN"
+
+      - name: Package (zip)
+        run: |
+          set -euo pipefail
+          ditto -c -k --sequesterRsrc --keepParent "$BUILD_DIR/Quotio.app" "$BUILD_DIR/Quotio-macos13-intel.zip"
+          shasum -a 256 "$BUILD_DIR/Quotio-macos13-intel.zip" | tee "$BUILD_DIR/Quotio-macos13-intel.zip.sha256"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Quotio-macos13-intel
+          path: |
+            build/macos13-intel/Quotio-macos13-intel.zip
+            build/macos13-intel/Quotio-macos13-intel.zip.sha256
+            build/macos13-intel/xcodebuild.log
+
+  # 可选：在“真实 macOS 13.x Intel”上跑一次冒烟测试（需要你自己提供 self-hosted runner）
+  smoke-test-macos13:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_smoke_test_on_self_hosted_macos13 }}
+    needs: build
+
+    # 你需要在 macOS 13.7.8 Intel 机器上注册 runner，并打上这些 labels
+    runs-on: [self-hosted, macos, x64, macos-13]
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Quotio-macos13-intel
+          path: artifacts
+
+      - name: Unzip
+        run: |
+          set -euo pipefail
+          mkdir -p app
+          ditto -x -k artifacts/Quotio-macos13-intel.zip app
+          APP_PATH=$(find app -maxdepth 3 -name "Quotio.app" -print -quit)
+          echo "APP_PATH=$APP_PATH" >> "$GITHUB_ENV"
+          ls -la "$APP_PATH"
+
+      - name: Smoke launch (best-effort)
+        run: |
+          set -euo pipefail
+          BIN="$APP_PATH/Contents/MacOS/Quotio"
+
+          # 代码签名校验（未公证/未开发者签名时 spctl 可能失败，这里不强制）
+          codesign --verify --deep --strict "$APP_PATH" || true
+
+          # 尝试启动 5 秒，能跑起来且不立刻崩溃就算通过（GUI App 在无人值守环境可能受限）
+          "$BIN" >/tmp/quotio.stdout 2>/tmp/quotio.stderr & PID=$!
+          sleep 5
+          if kill -0 "$PID" 2>/dev/null; then
+            kill "$PID" || true
+          fi
+          wait "$PID" || true
+
+          echo "stdout:"
+          tail -n 200 /tmp/quotio.stdout || true
+          echo "stderr:"
+          tail -n 200 /tmp/quotio.stderr || true

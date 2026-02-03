@@ -15,6 +15,7 @@
 
 import Foundation
 import Network
+import Perception
 
 // MARK: - Fallback Context
 
@@ -94,7 +95,7 @@ struct FallbackContext: Sendable {
 /// A lightweight TCP proxy that forwards requests to CLIProxyAPI while
 /// ensuring fresh connections by forcing "Connection: close" on all requests.
 @MainActor
-@Observable
+@Perceptible
 final class ProxyBridge {
     
     // MARK: - Properties

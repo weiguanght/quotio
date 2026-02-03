@@ -5,6 +5,7 @@
 
 import SwiftUI
 import AppKit
+import Perception
 
 struct ProviderIcon: View {
     let provider: AIProvider
@@ -23,23 +24,25 @@ struct ProviderIcon: View {
     }
     
     var body: some View {
-        Group {
-            if let nsImage = ImageCacheService.shared.image(named: provider.logoAssetName, size: size) {
-                Image(nsImage: nsImage)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .if(needsLightModeInDark && colorScheme == .dark) { view in
-                        view.colorInvert()
-                    }
-            } else {
-                // Fallback to SF Symbol if image not found
-                Image(systemName: provider.iconName)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .foregroundStyle(provider.color)
+        WithPerceptionTracking {
+            Group {
+                if let nsImage = ImageCacheService.shared.image(named: provider.logoAssetName, size: size) {
+                    Image(nsImage: nsImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .if(needsLightModeInDark && colorScheme == .dark) { view in
+                            view.colorInvert()
+                        }
+                } else {
+                    // Fallback to SF Symbol if image not found
+                    Image(systemName: provider.iconName)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .foregroundStyle(provider.color)
+                }
             }
+            .frame(width: size, height: size)
         }
-        .frame(width: size, height: size)
     }
 }
 

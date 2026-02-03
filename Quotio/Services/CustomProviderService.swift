@@ -7,9 +7,10 @@
 //
 
 import Foundation
+import Perception
 
 @MainActor
-@Observable
+@Perceptible
 final class CustomProviderService {
     static let shared = CustomProviderService()
     

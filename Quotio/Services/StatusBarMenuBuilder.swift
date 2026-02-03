@@ -12,6 +12,7 @@
 
 import AppKit
 import SwiftUI
+import Perception
 
 // MARK: - Status Bar Menu Builder
 
@@ -342,20 +343,22 @@ private struct MenuHeaderView: View {
     let isLoading: Bool
     
     var body: some View {
-        HStack {
-            Text("Quotio")
-                .font(.headline)
-                .fontWeight(.semibold)
+        WithPerceptionTracking {
+            HStack {
+                Text("Quotio")
+                    .font(.headline)
+                    .fontWeight(.semibold)
             
-            Spacer()
+                Spacer()
             
-            if isLoading {
-                ProgressView()
-                    .scaleEffect(0.6)
+                if isLoading {
+                    ProgressView()
+                        .scaleEffect(0.6)
+                }
             }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
     }
 }
 
@@ -379,20 +382,22 @@ private struct MenuProviderPickerView: View {
     }
     
     var body: some View {
-        // Wrap providers in a flexible layout
-        FlowLayout(spacing: 6) {
-            ForEach(providers) { provider in
-                ProviderFilterButton(
-                    provider: provider,
-                    isSelected: selectedProvider == provider
-                ) {
-                    selectedProviderRaw = provider.rawValue
-                    onProviderChanged()
+        WithPerceptionTracking {
+            // Wrap providers in a flexible layout
+            FlowLayout(spacing: 6) {
+                ForEach(providers) { provider in
+                    ProviderFilterButton(
+                        provider: provider,
+                        isSelected: selectedProvider == provider
+                    ) {
+                        selectedProviderRaw = provider.rawValue
+                        onProviderChanged()
+                    }
                 }
             }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
     }
 }
 
@@ -404,27 +409,29 @@ private struct ProviderFilterButton: View {
     let action: () -> Void
     
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 6) {
-                ProviderIconMono(provider: provider, size: 14)
-                    .opacity(isSelected ? 1.0 : 0.7)
+        WithPerceptionTracking {
+            Button(action: action) {
+                HStack(spacing: 6) {
+                    ProviderIconMono(provider: provider, size: 14)
+                        .opacity(isSelected ? 1.0 : 0.7)
                 
-                Text(provider.shortName)
-                    .font(.system(size: 11, weight: isSelected ? .semibold : .medium, design: .rounded))
+                    Text(provider.shortName)
+                        .font(.system(size: 11, weight: isSelected ? .semibold : .medium, design: .rounded))
+                }
+                .foregroundStyle(isSelected ? .primary : .secondary)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(
+                    Capsule()
+                        .fill(isSelected ? Color.accentColor.opacity(0.1) : Color.secondary.opacity(0.05))
+                )
+                .overlay(
+                    Capsule()
+                        .strokeBorder(isSelected ? Color.accentColor.opacity(0.3) : Color.clear, lineWidth: 1)
+                )
             }
-            .foregroundStyle(isSelected ? .primary : .secondary)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(
-                Capsule()
-                    .fill(isSelected ? Color.accentColor.opacity(0.1) : Color.secondary.opacity(0.05))
-            )
-            .overlay(
-                Capsule()
-                    .strokeBorder(isSelected ? Color.accentColor.opacity(0.3) : Color.clear, lineWidth: 1)
-            )
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
     }
 }
 
@@ -435,20 +442,22 @@ private struct ProviderIconMono: View {
     let size: CGFloat
     
     var body: some View {
-        Group {
-            if let assetName = provider.menuBarIconAsset,
-               let nsImage = NSImage(named: assetName) {
-                Image(nsImage: nsImage)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .colorMultiply(.primary)
-            } else {
-                Image(systemName: provider.iconName)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
+        WithPerceptionTracking {
+            Group {
+                if let assetName = provider.menuBarIconAsset,
+                   let nsImage = NSImage(named: assetName) {
+                    Image(nsImage: nsImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .colorMultiply(.primary)
+                } else {
+                    Image(systemName: provider.iconName)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                }
             }
+            .frame(width: size, height: size)
         }
-        .frame(width: size, height: size)
     }
 }
 
@@ -476,91 +485,93 @@ private struct MenuNetworkInfoView: View {
     }
 
     var body: some View {
-        VStack(spacing: 8) {
-            // Proxy Row
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(isProxyRunning ? Color.green : Color.gray)
-                    .frame(width: 6, height: 6)
-
-                Text("providers.source.proxy".localized())
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundStyle(.secondary)
-
-                if isProxyRunning {
-                    Text(proxyURL)
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundStyle(.primary)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
-
-                    copyButton(
-                        isCopied: didCopyProxy,
-                        helpText: "action.copy".localized()
-                    ) {
-                        onCopyProxyURL()
-                        triggerCopyState(.proxy)
-                    }
-                }
-
-                Spacer()
-
-                Button(action: onProxyToggle) {
-                    Image(systemName: isProxyRunning ? "stop.fill" : "play.fill")
-                        .font(.system(size: 9))
-                        .foregroundStyle(isProxyRunning ? .red : .green)
-                }
-                .buttonStyle(.plain)
-            }
-
-            // Tunnel Row (only show when proxy is running)
-            if isProxyRunning {
+        WithPerceptionTracking {
+            VStack(spacing: 8) {
+                // Proxy Row
                 HStack(spacing: 8) {
                     Circle()
-                        .fill(tunnelStatus == .active ? Color.blue : Color.gray)
+                        .fill(isProxyRunning ? Color.green : Color.gray)
                         .frame(width: 6, height: 6)
 
-                    Text(tunnelStatus == .active ? "tunnel.action.stop".localized() : "tunnel.action.start".localized())
+                    Text("providers.source.proxy".localized())
                         .font(.system(size: 10, weight: .medium))
                         .foregroundStyle(.secondary)
 
-                    if tunnelStatus == .active, let url = tunnelURL {
-                        Text(url.replacingOccurrences(of: "https://", with: ""))
-                            .font(.system(size: 9, design: .monospaced))
-                            .foregroundStyle(.blue)
+                    if isProxyRunning {
+                        Text(proxyURL)
+                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                            .foregroundStyle(.primary)
                             .lineLimit(1)
                             .truncationMode(.middle)
 
                         copyButton(
-                            isCopied: didCopyTunnel,
+                            isCopied: didCopyProxy,
                             helpText: "action.copy".localized()
                         ) {
-                            onCopyTunnelURL()
-                            triggerCopyState(.tunnel)
+                            onCopyProxyURL()
+                            triggerCopyState(.proxy)
                         }
-                    } else if tunnelStatus == .starting {
-                        Text("status.starting".localized())
-                            .font(.system(size: 9))
-                            .foregroundStyle(.tertiary)
                     }
 
                     Spacer()
 
-                    Button(action: onTunnelToggle) {
-                        Image(systemName: tunnelStatus == .active || tunnelStatus == .starting ? "stop.fill" : "play.fill")
+                    Button(action: onProxyToggle) {
+                        Image(systemName: isProxyRunning ? "stop.fill" : "play.fill")
                             .font(.system(size: 9))
-                            .foregroundStyle(tunnelStatus == .active ? .red : .blue)
+                            .foregroundStyle(isProxyRunning ? .red : .green)
                     }
                     .buttonStyle(.plain)
-                    .disabled(tunnelStatus == .starting || tunnelStatus == .stopping)
+                }
+
+                // Tunnel Row (only show when proxy is running)
+                if isProxyRunning {
+                    HStack(spacing: 8) {
+                        Circle()
+                            .fill(tunnelStatus == .active ? Color.blue : Color.gray)
+                            .frame(width: 6, height: 6)
+
+                        Text(tunnelStatus == .active ? "tunnel.action.stop".localized() : "tunnel.action.start".localized())
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(.secondary)
+
+                        if tunnelStatus == .active, let url = tunnelURL {
+                            Text(url.replacingOccurrences(of: "https://", with: ""))
+                                .font(.system(size: 9, design: .monospaced))
+                                .foregroundStyle(.blue)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+
+                            copyButton(
+                                isCopied: didCopyTunnel,
+                                helpText: "action.copy".localized()
+                            ) {
+                                onCopyTunnelURL()
+                                triggerCopyState(.tunnel)
+                            }
+                        } else if tunnelStatus == .starting {
+                            Text("status.starting".localized())
+                                .font(.system(size: 9))
+                                .foregroundStyle(.tertiary)
+                        }
+
+                        Spacer()
+
+                        Button(action: onTunnelToggle) {
+                            Image(systemName: tunnelStatus == .active || tunnelStatus == .starting ? "stop.fill" : "play.fill")
+                                .font(.system(size: 9))
+                                .foregroundStyle(tunnelStatus == .active ? .red : .blue)
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(tunnelStatus == .starting || tunnelStatus == .stopping)
+                    }
                 }
             }
+            .padding(10)
+            .background(Color.secondary.opacity(0.05))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 4)
         }
-        .padding(10)
-        .background(Color.secondary.opacity(0.05))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .padding(.horizontal, 12)
-        .padding(.vertical, 4)
     }
 
     private func triggerCopyState(_ target: CopyTarget) {
@@ -713,21 +724,23 @@ private struct MenuAccountCardView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            headerSection
+        WithPerceptionTracking {
+            VStack(alignment: .leading, spacing: 12) {
+                headerSection
             
-            quotaContentSection
+                quotaContentSection
             
-            footerSection
+                footerSection
+            }
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(isHovered ? Color.secondary.opacity(0.08) : Color.secondary.opacity(0.04))
+            )
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .onHover { isHovered = $0 }
         }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(isHovered ? Color.secondary.opacity(0.08) : Color.secondary.opacity(0.04))
-        )
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .onHover { isHovered = $0 }
     }
     
     // MARK: - Header
@@ -977,61 +990,63 @@ private struct LowestBarLayout: View {
     }
 
     var body: some View {
-        let displayMode = settings.quotaDisplayMode
+        WithPerceptionTracking {
+            let displayMode = settings.quotaDisplayMode
         
-        VStack(spacing: 8) {
-            if let lowest = lowest {
-                // Hero Row for Lowest with reset time
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack {
-                        Text(lowest.name)
-                            .font(.system(size: 12, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.primary)
-                        Spacer()
-                        PercentageBadge(percentage: lowest.percentage, style: .textOnly)
-                    }
-
-                    ModernProgressBar(percentage: lowest.percentage, height: 8)
-
-                    if let resetTime = lowest.formattedResetTime {
-                        HStack(spacing: 4) {
-                            Image(systemName: "clock.arrow.circlepath")
-                                .font(.system(size: 9))
-                            Text(resetTime)
-                                .font(.system(size: 9, weight: .medium, design: .rounded))
-                        }
-                        .foregroundStyle(.tertiary)
-                    }
-                }
-                .padding(8)
-                .background(menuStatusColor(remainingPercent: lowest.percentage, displayMode: displayMode).opacity(0.08))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(menuStatusColor(remainingPercent: lowest.percentage, displayMode: displayMode).opacity(0.2), lineWidth: 1)
-                )
-            }
-
-            // Others as text rows (one per line)
-            if !others.isEmpty {
-                VStack(spacing: 4) {
-                    ForEach(others, id: \.name) { (model: ModelBadgeData) in
-                        HStack(spacing: 6) {
-                            Text(model.name)
-                                .font(.system(size: 10, weight: .medium, design: .rounded))
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
+            VStack(spacing: 8) {
+                if let lowest = lowest {
+                    // Hero Row for Lowest with reset time
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Text(lowest.name)
+                                .font(.system(size: 12, weight: .semibold, design: .rounded))
+                                .foregroundStyle(.primary)
                             Spacer()
-                            if let resetTime = model.formattedResetTime {
-                                Text(resetTime)
-                                    .font(.system(size: 9, design: .rounded))
-                                    .foregroundStyle(.tertiary)
-                            }
-                            Text("\(Int(menuDisplayPercent(remainingPercent: model.percentage, displayMode: displayMode)))%")
-                                .font(.system(size: 10, weight: .bold, design: .monospaced))
-                                .foregroundStyle(menuStatusColor(remainingPercent: model.percentage, displayMode: displayMode))
+                            PercentageBadge(percentage: lowest.percentage, style: .textOnly)
                         }
-                        .padding(.vertical, 2)
+
+                        ModernProgressBar(percentage: lowest.percentage, height: 8)
+
+                        if let resetTime = lowest.formattedResetTime {
+                            HStack(spacing: 4) {
+                                Image(systemName: "clock.arrow.circlepath")
+                                    .font(.system(size: 9))
+                                Text(resetTime)
+                                    .font(.system(size: 9, weight: .medium, design: .rounded))
+                            }
+                            .foregroundStyle(.tertiary)
+                        }
+                    }
+                    .padding(8)
+                    .background(menuStatusColor(remainingPercent: lowest.percentage, displayMode: displayMode).opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(menuStatusColor(remainingPercent: lowest.percentage, displayMode: displayMode).opacity(0.2), lineWidth: 1)
+                    )
+                }
+
+                // Others as text rows (one per line)
+                if !others.isEmpty {
+                    VStack(spacing: 4) {
+                        ForEach(others, id: \.name) { (model: ModelBadgeData) in
+                            HStack(spacing: 6) {
+                                Text(model.name)
+                                    .font(.system(size: 10, weight: .medium, design: .rounded))
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(1)
+                                Spacer()
+                                if let resetTime = model.formattedResetTime {
+                                    Text(resetTime)
+                                        .font(.system(size: 9, design: .rounded))
+                                        .foregroundStyle(.tertiary)
+                                }
+                                Text("\(Int(menuDisplayPercent(remainingPercent: model.percentage, displayMode: displayMode)))%")
+                                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                    .foregroundStyle(menuStatusColor(remainingPercent: model.percentage, displayMode: displayMode))
+                            }
+                            .padding(.vertical, 2)
+                        }
                     }
                 }
             }
@@ -1057,27 +1072,29 @@ private struct RingGridLayout: View {
     }
 
     var body: some View {
-        let displayMode = settings.quotaDisplayMode
+        WithPerceptionTracking {
+            let displayMode = settings.quotaDisplayMode
         
-        // Auto-distribute 1-4 columns, cap at 4
-        LazyVGrid(columns: columns, spacing: 10) {
-            ForEach(models, id: \.name) { (model: ModelBadgeData) in
-                VStack(spacing: 4) {
-                    RingProgressView(percent: menuDisplayPercent(remainingPercent: model.percentage, displayMode: displayMode), size: ringSize, lineWidth: 4, tint: menuStatusColor(remainingPercent: model.percentage, displayMode: displayMode), showLabel: true)
+            // Auto-distribute 1-4 columns, cap at 4
+            LazyVGrid(columns: columns, spacing: 10) {
+                ForEach(models, id: \.name) { (model: ModelBadgeData) in
+                    VStack(spacing: 4) {
+                        RingProgressView(percent: menuDisplayPercent(remainingPercent: model.percentage, displayMode: displayMode), size: ringSize, lineWidth: 4, tint: menuStatusColor(remainingPercent: model.percentage, displayMode: displayMode), showLabel: true)
 
-                    Text(model.name)
-                        .font(.system(size: 10, weight: .medium, design: .rounded))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.8)
+                        Text(model.name)
+                            .font(.system(size: 10, weight: .medium, design: .rounded))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
 
-                    if let resetTime = model.formattedResetTime {
-                        Text(resetTime)
-                            .font(.system(size: 8, design: .rounded))
-                            .foregroundStyle(.tertiary)
+                        if let resetTime = model.formattedResetTime {
+                            Text(resetTime)
+                                .font(.system(size: 8, design: .rounded))
+                                .foregroundStyle(.tertiary)
+                        }
                     }
+                    .frame(maxWidth: .infinity)
                 }
-                .frame(maxWidth: .infinity)
             }
         }
     }
@@ -1098,32 +1115,34 @@ private struct CardGridLayout: View {
     }
     
     var body: some View {
-        let displayMode = settings.quotaDisplayMode
+        WithPerceptionTracking {
+            let displayMode = settings.quotaDisplayMode
         
-        LazyVGrid(columns: columns, spacing: 8) {
-            ForEach(models, id: \.name) { (model: ModelBadgeData) in
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text(model.name)
-                            .font(.system(size: 10, weight: .medium, design: .rounded))
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                        Spacer()
-                        if let resetTime = model.formattedResetTime {
-                            Text(resetTime)
-                                .font(.system(size: 9, design: .rounded))
-                                .foregroundStyle(.tertiary)
+            LazyVGrid(columns: columns, spacing: 8) {
+                ForEach(models, id: \.name) { (model: ModelBadgeData) in
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Text(model.name)
+                                .font(.system(size: 10, weight: .medium, design: .rounded))
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                            Spacer()
+                            if let resetTime = model.formattedResetTime {
+                                Text(resetTime)
+                                    .font(.system(size: 9, design: .rounded))
+                                    .foregroundStyle(.tertiary)
+                            }
+                            Text("\(Int(menuDisplayPercent(remainingPercent: model.percentage, displayMode: displayMode)))%")
+                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                .foregroundStyle(menuStatusColor(remainingPercent: model.percentage, displayMode: displayMode))
                         }
-                        Text("\(Int(menuDisplayPercent(remainingPercent: model.percentage, displayMode: displayMode)))%")
-                            .font(.system(size: 10, weight: .bold, design: .monospaced))
-                            .foregroundStyle(menuStatusColor(remainingPercent: model.percentage, displayMode: displayMode))
-                    }
 
-                    ModernProgressBar(percentage: model.percentage, height: 4)
+                        ModernProgressBar(percentage: model.percentage, height: 4)
+                    }
+                    .padding(8)
+                    .background(Color.secondary.opacity(0.05))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
-                .padding(8)
-                .background(Color.secondary.opacity(0.05))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
             }
         }
     }
@@ -1147,23 +1166,25 @@ private struct ModernProgressBar: View {
     }
     
     var body: some View {
-        GeometryReader { proxy in
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(Color.secondary.opacity(0.15))
+        WithPerceptionTracking {
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.secondary.opacity(0.15))
                 
-                Capsule()
-                    .fill(
-                        LinearGradient(
-                            colors: [color, color.opacity(0.8)],
-                            startPoint: .leading,
-                            endPoint: .trailing
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: [color, color.opacity(0.8)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
                         )
-                    )
-                    .frame(width: proxy.size.width * min(1, max(0, displayPercent / 100)))
+                        .frame(width: proxy.size.width * min(1, max(0, displayPercent / 100)))
+                }
             }
+            .frame(height: height)
         }
-        .frame(height: height)
     }
 }
 
@@ -1184,19 +1205,21 @@ private struct PercentageBadge: View {
     }
     
     var body: some View {
-        switch style {
-        case .pill:
-            Text("\(Int(displayPercent))%")
-                .font(.system(size: 10, weight: .bold, design: .monospaced))
-                .foregroundStyle(color)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
-                .background(color.opacity(0.1))
-                .clipShape(Capsule())
-        case .textOnly:
-            Text("\(Int(displayPercent))%")
-                .font(.system(size: 12, weight: .bold, design: .monospaced))
-                .foregroundStyle(color)
+        WithPerceptionTracking {
+            switch style {
+            case .pill:
+                Text("\(Int(displayPercent))%")
+                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                    .foregroundStyle(color)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(color.opacity(0.1))
+                    .clipShape(Capsule())
+            case .textOnly:
+                Text("\(Int(displayPercent))%")
+                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                    .foregroundStyle(color)
+            }
         }
     }
 }
@@ -1214,42 +1237,44 @@ private struct MenuModelDetailView: View {
     }
 
     var body: some View {
-        let displayMode = settings.quotaDisplayMode
-        let displayStyle = settings.quotaDisplayStyle
-        let displayPercent = menuDisplayPercent(remainingPercent: model.percentage, displayMode: displayMode)
+        WithPerceptionTracking {
+            let displayMode = settings.quotaDisplayMode
+            let displayStyle = settings.quotaDisplayStyle
+            let displayPercent = menuDisplayPercent(remainingPercent: model.percentage, displayMode: displayMode)
 
-        HStack(spacing: 8) {
-            Text(showRawName ? model.name : model.displayName)
-                .font(.system(size: 11, weight: .medium, design: showRawName ? .monospaced : .rounded))
-                .foregroundStyle(.primary)
-                .lineLimit(1)
+            HStack(spacing: 8) {
+                Text(showRawName ? model.name : model.displayName)
+                    .font(.system(size: 11, weight: .medium, design: showRawName ? .monospaced : .rounded))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
 
-            Spacer()
+                Spacer()
 
-            if let usage = model.formattedUsage {
-                Text(usage)
-                    .font(.system(size: 10, design: .monospaced))
-                    .foregroundStyle(.tertiary)
+                if let usage = model.formattedUsage {
+                    Text(usage)
+                        .font(.system(size: 10, design: .monospaced))
+                        .foregroundStyle(.tertiary)
+                }
+
+                if displayStyle != .ring {
+                    Text(String(format: "%.0f%% %@", displayPercent, displayMode.suffixKey.localized()))
+                        .font(.system(size: 10, weight: .semibold, design: .rounded))
+                        .foregroundStyle(statusColor)
+                }
+
+                if model.formattedResetTime != "—" && !model.formattedResetTime.isEmpty {
+                    Text(model.formattedResetTime)
+                        .font(.system(size: 9, design: .rounded))
+                        .foregroundStyle(.tertiary)
+                }
+
+                if displayStyle == .ring {
+                    RingProgressView(percent: displayPercent, size: 14, lineWidth: 2, tint: statusColor)
+                }
             }
-
-            if displayStyle != .ring {
-                Text(String(format: "%.0f%% %@", displayPercent, displayMode.suffixKey.localized()))
-                    .font(.system(size: 10, weight: .semibold, design: .rounded))
-                    .foregroundStyle(statusColor)
-            }
-
-            if model.formattedResetTime != "—" && !model.formattedResetTime.isEmpty {
-                Text(model.formattedResetTime)
-                    .font(.system(size: 9, design: .rounded))
-                    .foregroundStyle(.tertiary)
-            }
-
-            if displayStyle == .ring {
-                RingProgressView(percent: displayPercent, size: 14, lineWidth: 2, tint: statusColor)
-            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
     }
 }
 
@@ -1257,14 +1282,16 @@ private struct MenuModelDetailView: View {
 
 private struct MenuEmptyStateView: View {
     var body: some View {
-        VStack(spacing: 6) {
-            Text("menubar.noData".localized())
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+        WithPerceptionTracking {
+            VStack(spacing: 6) {
+                Text("menubar.noData".localized())
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .padding(.horizontal, 12)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .padding(.horizontal, 12)
     }
 }
 
@@ -1278,41 +1305,43 @@ private struct MenuViewMoreAccountsView: View {
     @State private var isHovered = false
 
     var body: some View {
-        Button(action: onToggle) {
-            HStack(spacing: 6) {
-                Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                    .rotationEffect(.degrees(isExpanded ? 180 : 0))
-                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isExpanded)
-
-                Text(isExpanded ? "menubar.hideAccounts".localized() : "menubar.viewMoreAccounts".localized())
-                    .font(.system(size: 12, weight: .medium))
-
-                if remainingCount > 0 {
-                    Text("+\(remainingCount)")
-                        .font(.system(size: 10, weight: .semibold, design: .monospaced))
+        WithPerceptionTracking {
+            Button(action: onToggle) {
+                HStack(spacing: 6) {
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 10, weight: .semibold))
                         .foregroundStyle(.secondary)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(Color.secondary.opacity(0.08))
-                        .clipShape(Capsule())
-                        .opacity(isExpanded ? 0 : 1)
-                        .animation(.easeInOut(duration: 0.2), value: isExpanded)
-                }
+                        .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isExpanded)
 
-                Spacer()
+                    Text(isExpanded ? "menubar.hideAccounts".localized() : "menubar.viewMoreAccounts".localized())
+                        .font(.system(size: 12, weight: .medium))
+
+                    if remainingCount > 0 {
+                        Text("+\(remainingCount)")
+                            .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.secondary.opacity(0.08))
+                            .clipShape(Capsule())
+                            .opacity(isExpanded ? 0 : 1)
+                            .animation(.easeInOut(duration: 0.2), value: isExpanded)
+                    }
+
+                    Spacer()
+                }
+                .padding(.vertical, 6)
+                .padding(.horizontal, 8)
+                .background(isHovered ? Color.secondary.opacity(0.1) : Color.clear)
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .contentShape(Rectangle())
             }
-            .padding(.vertical, 6)
-            .padding(.horizontal, 8)
-            .background(isHovered ? Color.secondary.opacity(0.1) : Color.clear)
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-            .contentShape(Rectangle())
+            .buttonStyle(.plain)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 4)
+            .onHover { isHovered = $0 }
         }
-        .buttonStyle(.plain)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 4)
-        .onHover { isHovered = $0 }
     }
 }
 
@@ -1344,35 +1373,37 @@ private struct MenuActionsView: View {
     @Environment(QuotaViewModel.self) private var viewModel
     
     var body: some View {
-        VStack(spacing: 0) {
-            MenuBarActionButton(
-                icon: "arrow.clockwise",
-                title: "action.refresh".localized(),
-                isLoading: viewModel.isLoadingQuotas
-            ) {
-                Task { await viewModel.refreshQuotasUnified() }
-            }
-            .disabled(viewModel.isLoadingQuotas)
+        WithPerceptionTracking {
+            VStack(spacing: 0) {
+                MenuBarActionButton(
+                    icon: "arrow.clockwise",
+                    title: "action.refresh".localized(),
+                    isLoading: viewModel.isLoadingQuotas
+                ) {
+                    Task { await viewModel.refreshQuotasUnified() }
+                }
+                .disabled(viewModel.isLoadingQuotas)
             
-            MenuBarActionButton(
-                icon: "macwindow",
-                title: "action.openApp".localized()
-            ) {
-                MenuActionHandler.openMainWindow()
-            }
+                MenuBarActionButton(
+                    icon: "macwindow",
+                    title: "action.openApp".localized()
+                ) {
+                    MenuActionHandler.openMainWindow()
+                }
             
-            Divider()
-                .padding(.vertical, 4)
+                Divider()
+                    .padding(.vertical, 4)
             
-            MenuBarActionButton(
-                icon: "xmark.circle",
-                title: "action.quit".localized()
-            ) {
-                NSApplication.shared.terminate(nil)
+                MenuBarActionButton(
+                    icon: "xmark.circle",
+                    title: "action.quit".localized()
+                ) {
+                    NSApplication.shared.terminate(nil)
+                }
             }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 4)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 4)
     }
 }
 
@@ -1387,29 +1418,31 @@ private struct MenuBarActionButton: View {
     @State private var isHovered = false
     
     var body: some View {
-        Button(action: action) {
-            HStack {
-                Image(systemName: icon)
-                    .font(.system(size: 12))
-                    .frame(width: 14)
+        WithPerceptionTracking {
+            Button(action: action) {
+                HStack {
+                    Image(systemName: icon)
+                        .font(.system(size: 12))
+                        .frame(width: 14)
                 
-                Text(title)
-                    .font(.system(size: 13))
+                    Text(title)
+                        .font(.system(size: 13))
                 
-                Spacer()
+                    Spacer()
                 
-                if isLoading {
-                    SmallProgressView(size: 12)
+                    if isLoading {
+                        SmallProgressView(size: 12)
+                    }
                 }
+                .padding(.vertical, 6)
+                .padding(.horizontal, 8)
+                .background(isHovered ? Color.secondary.opacity(0.1) : Color.clear)
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .contentShape(Rectangle())
             }
-            .padding(.vertical, 6)
-            .padding(.horizontal, 8)
-            .background(isHovered ? Color.secondary.opacity(0.1) : Color.clear)
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-            .contentShape(Rectangle())
+            .buttonStyle(.plain)
+            .disabled(isLoading)
+            .onHover { isHovered = $0 }
         }
-        .buttonStyle(.plain)
-        .disabled(isLoading)
-        .onHover { isHovered = $0 }
     }
 }

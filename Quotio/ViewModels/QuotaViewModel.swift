@@ -6,31 +6,31 @@
 import Foundation
 import SwiftUI
 import AppKit
-import Observation
+import Perception
 
 @MainActor
-@Observable
+@Perceptible
 final class QuotaViewModel {
     let proxyManager: CLIProxyManager
-    @ObservationIgnored private var _apiClient: ManagementAPIClient?
+    @PerceptionIgnored private var _apiClient: ManagementAPIClient?
     
     var apiClient: ManagementAPIClient? { _apiClient }
-    @ObservationIgnored private let antigravityFetcher = AntigravityQuotaFetcher()
-    @ObservationIgnored private let openAIFetcher = OpenAIQuotaFetcher()
-    @ObservationIgnored private let copilotFetcher = CopilotQuotaFetcher()
-    @ObservationIgnored private let glmFetcher = GLMQuotaFetcher()
-    @ObservationIgnored private let warpFetcher = WarpQuotaFetcher()
-    @ObservationIgnored private let directAuthService = DirectAuthFileService()
-    @ObservationIgnored private let notificationManager = NotificationManager.shared
-    @ObservationIgnored private let modeManager = OperatingModeManager.shared
-    @ObservationIgnored private let refreshSettings = RefreshSettingsManager.shared
-    @ObservationIgnored private let warmupSettings = WarmupSettingsManager.shared
-    @ObservationIgnored private let warmupService = WarmupService()
+    @PerceptionIgnored private let antigravityFetcher = AntigravityQuotaFetcher()
+    @PerceptionIgnored private let openAIFetcher = OpenAIQuotaFetcher()
+    @PerceptionIgnored private let copilotFetcher = CopilotQuotaFetcher()
+    @PerceptionIgnored private let glmFetcher = GLMQuotaFetcher()
+    @PerceptionIgnored private let warpFetcher = WarpQuotaFetcher()
+    @PerceptionIgnored private let directAuthService = DirectAuthFileService()
+    @PerceptionIgnored private let notificationManager = NotificationManager.shared
+    @PerceptionIgnored private let modeManager = OperatingModeManager.shared
+    @PerceptionIgnored private let refreshSettings = RefreshSettingsManager.shared
+    @PerceptionIgnored private let warmupSettings = WarmupSettingsManager.shared
+    @PerceptionIgnored private let warmupService = WarmupService()
     private var warmupNextRun: [WarmupAccountKey: Date] = [:]
     private var warmupStatuses: [WarmupAccountKey: WarmupStatus] = [:]
-    @ObservationIgnored private var warmupModelCache: [WarmupAccountKey: (models: [WarmupModelInfo], fetchedAt: Date)] = [:]
-    @ObservationIgnored private let warmupModelCacheTTL: TimeInterval = 28800
-    @ObservationIgnored private var lastProxyURL: String?
+    @PerceptionIgnored private var warmupModelCache: [WarmupAccountKey: (models: [WarmupModelInfo], fetchedAt: Date)] = [:]
+    @PerceptionIgnored private let warmupModelCacheTTL: TimeInterval = 28800
+    @PerceptionIgnored private var lastProxyURL: String?
     
     /// Request tracker for monitoring API requests through ProxyBridge
     let requestTracker = RequestTracker.shared
@@ -39,14 +39,14 @@ final class QuotaViewModel {
     let tunnelManager = TunnelManager.shared
     
     // Quota-Only Mode Fetchers (CLI-based)
-    @ObservationIgnored private let claudeCodeFetcher = ClaudeCodeQuotaFetcher()
-    @ObservationIgnored private let cursorFetcher = CursorQuotaFetcher()
-    @ObservationIgnored private let codexCLIFetcher = CodexCLIQuotaFetcher()
-    @ObservationIgnored private let geminiCLIFetcher = GeminiCLIQuotaFetcher()
-    @ObservationIgnored private let traeFetcher = TraeQuotaFetcher()
-    @ObservationIgnored private let kiroFetcher = KiroQuotaFetcher()
+    @PerceptionIgnored private let claudeCodeFetcher = ClaudeCodeQuotaFetcher()
+    @PerceptionIgnored private let cursorFetcher = CursorQuotaFetcher()
+    @PerceptionIgnored private let codexCLIFetcher = CodexCLIQuotaFetcher()
+    @PerceptionIgnored private let geminiCLIFetcher = GeminiCLIQuotaFetcher()
+    @PerceptionIgnored private let traeFetcher = TraeQuotaFetcher()
+    @PerceptionIgnored private let kiroFetcher = KiroQuotaFetcher()
     
-    @ObservationIgnored private var lastKnownAccountStatuses: [String: String] = [:]
+    @PerceptionIgnored private var lastKnownAccountStatuses: [String: String] = [:]
     
     var currentPage: NavigationPage = .dashboard
     var authFiles: [AuthFile] = []
@@ -68,9 +68,9 @@ final class QuotaViewModel {
     
     /// IDE Scan state
     var showIDEScanSheet = false
-    @ObservationIgnored private let ideScanSettings = IDEScanSettingsManager.shared
+    @PerceptionIgnored private let ideScanSettings = IDEScanSettingsManager.shared
     
-    @ObservationIgnored private var _agentSetupViewModel: AgentSetupViewModel?
+    @PerceptionIgnored private var _agentSetupViewModel: AgentSetupViewModel?
     var agentSetupViewModel: AgentSetupViewModel {
         if let vm = _agentSetupViewModel {
             return vm
@@ -90,11 +90,11 @@ final class QuotaViewModel {
     /// Antigravity account switcher (for IDE token injection)
     let antigravitySwitcher = AntigravityAccountSwitcher.shared
     
-    @ObservationIgnored private var refreshTask: Task<Void, Never>?
-    @ObservationIgnored private var warmupTask: Task<Void, Never>?
-    @ObservationIgnored private var lastLogTimestamp: Int?
-    @ObservationIgnored private var isWarmupRunning = false
-    @ObservationIgnored private var warmupRunningAccounts: Set<WarmupAccountKey> = []
+    @PerceptionIgnored private var refreshTask: Task<Void, Never>?
+    @PerceptionIgnored private var warmupTask: Task<Void, Never>?
+    @PerceptionIgnored private var lastLogTimestamp: Int?
+    @PerceptionIgnored private var isWarmupRunning = false
+    @PerceptionIgnored private var warmupRunningAccounts: Set<WarmupAccountKey> = []
 
     struct WarmupStatus: Sendable {
         var isRunning: Bool = false
@@ -1055,7 +1055,7 @@ final class QuotaViewModel {
         }
     }
     
-    @ObservationIgnored private var lastQuotaRefresh: Date?
+    @PerceptionIgnored private var lastQuotaRefresh: Date?
     
     private var quotaRefreshInterval: TimeInterval {
         refreshSettings.refreshCadence.intervalSeconds ?? 60

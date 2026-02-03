@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import Perception
 
 // MARK: - Privacy String Extension
 
@@ -95,7 +96,7 @@ enum AppearanceMode: String, CaseIterable, Identifiable {
 
 /// Manager for appearance settings with persistence
 @MainActor
-@Observable
+@Perceptible
 final class AppearanceManager {
     static let shared = AppearanceManager()
     
@@ -374,7 +375,7 @@ extension MenuBarSettingsManager {
 
 /// Manager for refresh cadence settings with persistence
 @MainActor
-@Observable
+@Perceptible
 final class RefreshSettingsManager {
     static let shared = RefreshSettingsManager()
     
@@ -419,7 +420,7 @@ struct MenuBarQuotaDisplayItem: Identifiable {
 
 /// Manager for menu bar display settings with persistence
 @MainActor
-@Observable
+@Perceptible
 final class MenuBarSettingsManager {
     static let shared = MenuBarSettingsManager()
     

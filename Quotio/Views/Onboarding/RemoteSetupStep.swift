@@ -4,9 +4,10 @@
 //
 
 import SwiftUI
+import Perception
 
 struct RemoteSetupStep: View {
-    @Bindable var viewModel: OnboardingViewModel
+    @Perception.Bindable var viewModel: OnboardingViewModel
     @State private var showPassword = false
     
     private var urlValidation: RemoteURLValidationResult {
@@ -14,17 +15,19 @@ struct RemoteSetupStep: View {
     }
     
     var body: some View {
-        VStack(spacing: 24) {
-            headerSection
-            
-            formSection
-                .frame(maxWidth: 460)
-            
-            Spacer()
-            
-            navigationButtons
+        WithPerceptionTracking {
+            VStack(spacing: 24) {
+                headerSection
+        
+                formSection
+                    .frame(maxWidth: 460)
+        
+                Spacer()
+        
+                navigationButtons
+            }
+            .padding(40)
         }
-        .padding(40)
     }
     
     private var headerSection: some View {

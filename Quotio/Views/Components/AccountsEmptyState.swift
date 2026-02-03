@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Perception
 
 // MARK: - Accounts Empty State
 
@@ -16,53 +17,55 @@ struct AccountsEmptyState: View {
     var isQuotaOnlyMode: Bool = false
     
     var body: some View {
-        VStack(spacing: 20) {
-            // Illustration
-            ZStack {
-                Circle()
-                    .fill(Color.accentColor.opacity(0.1))
-                    .frame(width: 80, height: 80)
-                
-                Image(systemName: "person.2.badge.key")
-                    .font(.system(size: 32))
-                    .foregroundStyle(.secondary)
-            }
+        WithPerceptionTracking {
+            VStack(spacing: 20) {
+                // Illustration
+                ZStack {
+                    Circle()
+                        .fill(Color.accentColor.opacity(0.1))
+                        .frame(width: 80, height: 80)
             
-            // Text content
-            VStack(spacing: 8) {
-                Text("providers.emptyState.title".localized())
-                    .font(.headline)
-                
-                Text("providers.emptyState.message".localized())
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .frame(maxWidth: 320)
-            }
+                    Image(systemName: "person.2.badge.key")
+                        .font(.system(size: 32))
+                        .foregroundStyle(.secondary)
+                }
+        
+                // Text content
+                VStack(spacing: 8) {
+                    Text("providers.emptyState.title".localized())
+                        .font(.headline)
             
-            // Action buttons
-            HStack(spacing: 12) {
-                if let onScanIDEs = onScanIDEs {
-                    Button {
-                        onScanIDEs()
-                    } label: {
-                        Label("ideScan.title".localized(), systemImage: "sparkle.magnifyingglass")
-                    }
-                    .buttonStyle(.borderedProminent)
+                    Text("providers.emptyState.message".localized())
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 320)
                 }
-                
-                if let onAddProvider = onAddProvider {
-                    Button {
-                        onAddProvider()
-                    } label: {
-                        Label("providers.addManually".localized(), systemImage: "plus")
+        
+                // Action buttons
+                HStack(spacing: 12) {
+                    if let onScanIDEs = onScanIDEs {
+                        Button {
+                            onScanIDEs()
+                        } label: {
+                            Label("ideScan.title".localized(), systemImage: "sparkle.magnifyingglass")
+                        }
+                        .buttonStyle(.borderedProminent)
                     }
-                    .buttonStyle(.bordered)
+            
+                    if let onAddProvider = onAddProvider {
+                        Button {
+                            onAddProvider()
+                        } label: {
+                            Label("providers.addManually".localized(), systemImage: "plus")
+                        }
+                        .buttonStyle(.bordered)
+                    }
                 }
             }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 40)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 40)
     }
 }
 

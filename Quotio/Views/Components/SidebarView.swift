@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Perception
 
 // Legacy SidebarView - kept for reference
 struct SidebarView: View {
@@ -15,7 +16,9 @@ struct SidebarView: View {
     @Binding var isPinned: Bool
     
     var body: some View {
-        // Now using NavigationSplitView in QuotioApp.swift
-        EmptyView()
+        WithPerceptionTracking {
+            // Now using NavigationSplitView in QuotioApp.swift
+            EmptyView()
+        }
     }
 }

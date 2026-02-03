@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Perception
 
 // MARK: - Supported Languages
 
@@ -54,7 +55,7 @@ enum AppLanguage: String, CaseIterable, Identifiable, Codable {
 // MARK: - Language Manager
 
 @MainActor
-@Observable
+@Perceptible
 final class LanguageManager {
 
     static let shared = LanguageManager()

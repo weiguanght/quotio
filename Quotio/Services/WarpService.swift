@@ -7,9 +7,10 @@
 
 import Foundation
 import SwiftUI
+import Perception
 
 @MainActor
-@Observable
+@Perceptible
 final class WarpService {
     static let shared = WarpService()
     

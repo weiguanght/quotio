@@ -7,16 +7,16 @@
 //
 
 import Foundation
-import Observation
+import Perception
 
 /// Lightweight ViewModel for proxy logs - only loaded when LogsScreen is visible
 @MainActor
-@Observable
+@Perceptible
 final class LogsViewModel {
     private var apiClient: ManagementAPIClient?
     
     var logs: [LogEntry] = []
-    @ObservationIgnored private var lastLogTimestamp: Int?
+    @PerceptionIgnored private var lastLogTimestamp: Int?
     
     /// Configure the API client for fetching logs
     func configure(baseURL: String, authKey: String) {

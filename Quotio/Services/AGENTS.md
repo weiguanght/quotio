@@ -8,7 +8,7 @@ Three concurrency patterns used:
 
 | Pattern | Count | Use Case |
 |---------|-------|----------|
-| `@MainActor @Observable` | 11 | UI-bound state (StatusBarManager, CLIProxyManager) |
+| `@MainActor @Perceptible` | 11 | UI-bound state (StatusBarManager, CLIProxyManager) |
 | `actor` | 13 | Thread-safe async (API clients, quota fetchers) |
 | Singleton (`static let shared`) | 12 | App-wide coordination |
 
@@ -69,7 +69,7 @@ Three concurrency patterns used:
 
 **Singleton (UI-bound):**
 ```swift
-@MainActor @Observable
+@MainActor @Perceptible
 final class MyService {
     static let shared = MyService()
     private init() {}

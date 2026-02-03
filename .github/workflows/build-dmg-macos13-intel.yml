@@ -1,0 +1,44 @@
+name: Build macOS 13 Intel DMG
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15-intel
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build app (macOS 13, Intel)
+        run: |
+          set -euxo pipefail
+          mkdir -p build/macos13-intel
+          xcodebuild \
+            -project Quotio.xcodeproj \
+            -scheme Quotio \
+            -configuration Release \
+            ARCHS=x86_64 \
+            MACOSX_DEPLOYMENT_TARGET=13.0 \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CONFIGURATION_BUILD_DIR="$PWD/build/macos13-intel" \
+            build \
+            2>&1 | tee build/macos13-intel/xcodebuild.log
+
+      - name: Create DMG
+        run: |
+          set -euxo pipefail
+          hdiutil create \
+            -volname "Quotio" \
+            -srcfolder build/macos13-intel/Quotio.app \
+            -ov \
+            -format UDZO \
+            build/macos13-intel/Quotio-macos13-intel.dmg
+          shasum -a 256 build/macos13-intel/Quotio-macos13-intel.dmg > build/macos13-intel/Quotio-macos13-intel.dmg.sha256
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Quotio-macos13-intel-dmg
+          path: build/macos13-intel

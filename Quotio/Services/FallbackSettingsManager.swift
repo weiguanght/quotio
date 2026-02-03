@@ -4,7 +4,7 @@
 //
 
 import Foundation
-import Observation
+import Perception
 
 // MARK: - Cached Entry Info
 
@@ -36,7 +36,7 @@ struct FallbackRouteState: Sendable, Equatable {
 }
 
 @MainActor
-@Observable
+@Perceptible
 final class FallbackSettingsManager {
     static let shared = FallbackSettingsManager()
 
@@ -65,8 +65,8 @@ final class FallbackSettingsManager {
     // Thread-safe cache for entry IDs (accessed from ProxyBridge on background threads)
     // Using entry ID instead of index to handle reordering correctly
     // Marked nonisolated(unsafe) because we handle thread safety manually with NSLock
-    @ObservationIgnored nonisolated(unsafe) private var cachedEntryIds: [String: CachedEntryInfo] = [:]
-    @ObservationIgnored nonisolated private let cacheLock = NSLock()
+    @PerceptionIgnored nonisolated(unsafe) private var cachedEntryIds: [String: CachedEntryInfo] = [:]
+    @PerceptionIgnored nonisolated private let cacheLock = NSLock()
 
     /// Cache expiration time in seconds (60 minutes)
     /// After expiration, fallback will restart from the first entry

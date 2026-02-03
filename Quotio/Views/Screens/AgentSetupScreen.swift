@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import Perception
 
 struct AgentSetupScreen: View {
     @Environment(QuotaViewModel.self) private var quotaViewModel
@@ -33,36 +34,38 @@ struct AgentSetupScreen: View {
     }
     
     var body: some View {
-        Group {
-            agentListView
-        }
-        .navigationTitle("agents.title".localized())
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    Task { await viewModel.refreshAgentStatuses(forceRefresh: true) }
-                } label: {
-                    if viewModel.isLoading {
-                        SmallProgressView()
-                    } else {
-                        Image(systemName: "arrow.clockwise")
+        WithPerceptionTracking {
+            Group {
+                agentListView
+            }
+            .navigationTitle("agents.title".localized())
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        Task { await viewModel.refreshAgentStatuses(forceRefresh: true) }
+                    } label: {
+                        if viewModel.isLoading {
+                            SmallProgressView()
+                        } else {
+                            Image(systemName: "arrow.clockwise")
+                        }
                     }
+                    .disabled(viewModel.isLoading)
                 }
-                .disabled(viewModel.isLoading)
             }
-        }
-        .task {
-            if !hasLoadedOnce {
-                await viewModel.refreshAgentStatuses()
-                hasLoadedOnce = true
-            }
-        }
-        .sheet(item: $selectedAgentForConfig) { (agent: CLIAgent) in
-            AgentConfigSheet(viewModel: viewModel, agent: agent)
-                .id(sheetPresentationID)
-                .onDisappear {
-                    viewModel.dismissConfiguration()
+            .task {
+                if !hasLoadedOnce {
+                    await viewModel.refreshAgentStatuses()
+                    hasLoadedOnce = true
                 }
+            }
+            .sheet(item: $selectedAgentForConfig) { (agent: CLIAgent) in
+                AgentConfigSheet(viewModel: viewModel, agent: agent)
+                    .id(sheetPresentationID)
+                    .onDisappear {
+                        viewModel.dismissConfiguration()
+                    }
+            }
         }
     }
     
@@ -153,15 +156,17 @@ private struct StatChip: View {
     let color: Color
     
     var body: some View {
-        HStack(spacing: 6) {
-            Image(systemName: icon)
-                .foregroundStyle(color)
-            Text(value)
-                .fontWeight(.semibold)
-            Text(label)
-                .foregroundStyle(.secondary)
+        WithPerceptionTracking {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .foregroundStyle(color)
+                Text(value)
+                    .fontWeight(.semibold)
+                Text(label)
+                    .foregroundStyle(.secondary)
+            }
+            .font(.subheadline)
         }
-        .font(.subheadline)
     }
 }
 
@@ -169,27 +174,29 @@ private struct NotInstalledAgentCard: View {
     let agent: CLIAgent
     
     var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: agent.systemIcon)
-                .foregroundStyle(.secondary)
-                .frame(width: 24, height: 24)
-            
-            Text(agent.displayName)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            
-            Spacer()
-            
-            if let docsURL = agent.docsURL {
-                Link(destination: docsURL) {
-                    Image(systemName: "arrow.up.right.square")
-                        .font(.caption)
+        WithPerceptionTracking {
+            HStack(spacing: 8) {
+                Image(systemName: agent.systemIcon)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 24, height: 24)
+        
+                Text(agent.displayName)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+        
+                Spacer()
+        
+                if let docsURL = agent.docsURL {
+                    Link(destination: docsURL) {
+                        Image(systemName: "arrow.up.right.square")
+                            .font(.caption)
+                    }
                 }
             }
+            .padding(10)
+            .background(Color.secondary.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
-        .padding(10)
-        .background(Color.secondary.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 }
 

@@ -13,6 +13,7 @@
 
 import SwiftUI
 import AppKit
+import Perception
 
 /// A small indeterminate progress indicator that avoids AppKit constraint issues.
 ///
@@ -26,8 +27,10 @@ struct SmallProgressView: View {
     }
     
     var body: some View {
-        SmallProgressIndicator()
-            .frame(width: size, height: size)
+        WithPerceptionTracking {
+            SmallProgressIndicator()
+                .frame(width: size, height: size)
+        }
     }
 }
 

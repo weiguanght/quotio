@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Perception
 
 enum OnboardingStep: Int, CaseIterable {
     case welcome = 0
@@ -26,7 +27,7 @@ enum OnboardingStep: Int, CaseIterable {
 }
 
 @MainActor
-@Observable
+@Perceptible
 final class OnboardingViewModel {
     var currentStep: OnboardingStep = .welcome
     var selectedMode: OperatingMode = .monitor
@@ -117,17 +118,19 @@ struct OnboardingFlow: View {
     var onComplete: (() -> Void)?
     
     var body: some View {
-        VStack(spacing: 0) {
-            stepContent
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .id(viewModel.currentStep)
-                .transition(slideTransition)
-                .animation(.easeInOut(duration: 0.3), value: viewModel.currentStep)
-            
-            progressIndicator
-                .padding(.bottom, 24)
+        WithPerceptionTracking {
+            VStack(spacing: 0) {
+                stepContent
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .id(viewModel.currentStep)
+                    .transition(slideTransition)
+                    .animation(.easeInOut(duration: 0.3), value: viewModel.currentStep)
+        
+                progressIndicator
+                    .padding(.bottom, 24)
+            }
+            .frame(width: 640, height: 560)
         }
-        .frame(width: 640, height: 560)
     }
     
     @ViewBuilder

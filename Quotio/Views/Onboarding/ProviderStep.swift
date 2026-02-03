@@ -4,24 +4,27 @@
 //
 
 import SwiftUI
+import Perception
 
 struct ProviderStep: View {
-    @Bindable var viewModel: OnboardingViewModel
+    @Perception.Bindable var viewModel: OnboardingViewModel
     
     var body: some View {
-        VStack(spacing: 24) {
-            headerSection
-            
-            providersGrid
-                .frame(maxWidth: 520)
-            
-            hintSection
-            
-            Spacer()
-            
-            navigationButtons
+        WithPerceptionTracking {
+            VStack(spacing: 24) {
+                headerSection
+        
+                providersGrid
+                    .frame(maxWidth: 520)
+        
+                hintSection
+        
+                Spacer()
+        
+                navigationButtons
+            }
+            .padding(40)
         }
-        .padding(40)
     }
     
     private var headerSection: some View {
@@ -94,18 +97,20 @@ struct ProviderPreviewCard: View {
     let provider: AIProvider
     
     var body: some View {
-        VStack(spacing: 8) {
-            ProviderIcon(provider: provider, size: 40)
-            
-            Text(provider.displayName)
-                .font(.caption)
-                .fontWeight(.medium)
-                .lineLimit(1)
+        WithPerceptionTracking {
+            VStack(spacing: 8) {
+                ProviderIcon(provider: provider, size: 40)
+        
+                Text(provider.displayName)
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .background(Color.secondary.opacity(0.08))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .background(Color.secondary.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 

@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import Perception
 
 struct CustomProviderSheet: View {
     @Environment(\.dismiss) private var dismiss
@@ -29,41 +30,43 @@ struct CustomProviderSheet: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            headerView
-            
-            Divider()
-            
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    basicInfoSection
-                    apiKeysSection
-                    
-                    if providerType.supportsModelMapping {
-                        modelMappingSection
+        WithPerceptionTracking {
+            VStack(spacing: 0) {
+                headerView
+        
+                Divider()
+        
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        basicInfoSection
+                        apiKeysSection
+                
+                        if providerType.supportsModelMapping {
+                            modelMappingSection
+                        }
+                
+                        if providerType.supportsCustomHeaders {
+                            customHeadersSection
+                        }
+                
+                        enabledSection
                     }
-                    
-                    if providerType.supportsCustomHeaders {
-                        customHeadersSection
-                    }
-                    
-                    enabledSection
+                    .padding(20)
                 }
-                .padding(20)
+        
+                Divider()
+        
+                footerView
             }
-            
-            Divider()
-            
-            footerView
-        }
-        .frame(width: 600, height: 700)
-        .onAppear {
-            loadProviderData()
-        }
-        .alert("customProviders.validationError".localized(), isPresented: $showValidationAlert) {
-            Button("action.ok".localized(), role: .cancel) {}
-        } message: {
-            Text(validationErrors.joined(separator: "\n"))
+            .frame(width: 600, height: 700)
+            .onAppear {
+                loadProviderData()
+            }
+            .alert("customProviders.validationError".localized(), isPresented: $showValidationAlert) {
+                Button("action.ok".localized(), role: .cancel) {}
+            } message: {
+                Text(validationErrors.joined(separator: "\n"))
+            }
         }
     }
     

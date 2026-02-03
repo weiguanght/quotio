@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Perception
 
 /// Options for IDE scanning - what data sources to scan
 struct IDEScanOptions: Sendable {
@@ -69,7 +70,7 @@ struct IDEScanResult: Sendable {
 /// Manages IDE scan consent settings
 /// User must explicitly trigger scan - no auto-scanning
 @MainActor
-@Observable
+@Perceptible
 final class IDEScanSettingsManager {
     static let shared = IDEScanSettingsManager()
     

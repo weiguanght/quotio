@@ -12,6 +12,7 @@
 import SwiftUI
 import AppKit
 import UniformTypeIdentifiers
+import Perception
 
 struct ProvidersScreen: View {
     @Environment(QuotaViewModel.self) private var viewModel
@@ -128,105 +129,107 @@ struct ProvidersScreen: View {
     // MARK: - Body
     
     var body: some View {
-        List {
-            // Section 1: Your Accounts (grouped by provider)
-            accountsSection
-            
-            // Section 2: Custom Providers (Local Proxy Mode only)
-            if modeManager.isLocalProxyMode {
-                customProvidersSection
-            }
-        }
-        .navigationTitle(modeManager.isMonitorMode ? "nav.accounts".localized() : "nav.providers".localized())
-        .toolbar {
-            toolbarContent
-        }
-        .sheet(item: $selectedProvider) { provider in
-            OAuthSheet(provider: provider, projectId: $projectId) {
-                selectedProvider = nil
-                projectId = ""
-                viewModel.oauthState = nil
-            }
-            .environment(viewModel)
-        }
-        .fileImporter(
-            isPresented: $isImporterPresented,
-            allowedContentTypes: [.json],
-            allowsMultipleSelection: false
-        ) { result in
-            if case .success(let urls) = result, let url = urls.first {
-                Task { await viewModel.importVertexServiceAccount(url: url) }
-            }
-            // Failure case is silently ignored - user can retry via UI
-        }
-        .task {
-            await viewModel.loadDirectAuthFiles()
-        }
-        .alert("providers.proxyRequired.title".localized(), isPresented: $showProxyRequiredAlert) {
-            Button("action.startProxy".localized()) {
-                Task { await viewModel.startProxy() }
-            }
-            Button("action.cancel".localized(), role: .cancel) {}
-        } message: {
-            Text("providers.proxyRequired.message".localized())
-        }
-        .sheet(isPresented: $showIDEScanSheet) {
-            IDEScanSheet {}
-            .environment(viewModel)
-        }
-        .sheet(isPresented: $showCustomProviderSheet) {
-            CustomProviderSheet(provider: editingCustomProvider) { provider in
-                // Check if provider already exists by ID to determine if we're updating or adding
-                if customProviderService.providers.contains(where: { $0.id == provider.id }) {
-                    customProviderService.updateProvider(provider)
-                } else {
-                    customProviderService.addProvider(provider)
+        WithPerceptionTracking {
+            List {
+                // Section 1: Your Accounts (grouped by provider)
+                accountsSection
+        
+                // Section 2: Custom Providers (Local Proxy Mode only)
+                if modeManager.isLocalProxyMode {
+                    customProvidersSection
                 }
-                editingCustomProvider = nil
-                syncCustomProvidersToConfig()
             }
-        }
-        .sheet(isPresented: $showWarpConnectionSheet) {
-            WarpConnectionSheet(token: editingWarpToken) { name, token in
-                if let existing = editingWarpToken {
-                    var updated = existing
-                    updated.name = name
-                    updated.token = token
-                    warpService.updateToken(updated)
-                } else {
-                    warpService.addToken(name: name, token: token)
+            .navigationTitle(modeManager.isMonitorMode ? "nav.accounts".localized() : "nav.providers".localized())
+            .toolbar {
+                toolbarContent
+            }
+            .sheet(item: $selectedProvider) { provider in
+                OAuthSheet(provider: provider, projectId: $projectId) {
+                    selectedProvider = nil
+                    projectId = ""
+                    viewModel.oauthState = nil
                 }
-                editingWarpToken = nil
-                Task { await viewModel.refreshAutoDetectedProviders() }
+                .environment(viewModel)
             }
-        }
-        .sheet(isPresented: $showAddProviderPopover) {
-            AddProviderPopover(
-                providers: addableProviders,
-                existingCounts: providerAccountCounts,
-                onSelectProvider: { provider in
-                    handleAddProvider(provider)
-                },
-                onScanIDEs: {
-                    showIDEScanSheet = true
-                },
-                onAddCustomProvider: {
+            .fileImporter(
+                isPresented: $isImporterPresented,
+                allowedContentTypes: [.json],
+                allowsMultipleSelection: false
+            ) { result in
+                if case .success(let urls) = result, let url = urls.first {
+                    Task { await viewModel.importVertexServiceAccount(url: url) }
+                }
+                // Failure case is silently ignored - user can retry via UI
+            }
+            .task {
+                await viewModel.loadDirectAuthFiles()
+            }
+            .alert("providers.proxyRequired.title".localized(), isPresented: $showProxyRequiredAlert) {
+                Button("action.startProxy".localized()) {
+                    Task { await viewModel.startProxy() }
+                }
+                Button("action.cancel".localized(), role: .cancel) {}
+            } message: {
+                Text("providers.proxyRequired.message".localized())
+            }
+            .sheet(isPresented: $showIDEScanSheet) {
+                IDEScanSheet {}
+                .environment(viewModel)
+            }
+            .sheet(isPresented: $showCustomProviderSheet) {
+                CustomProviderSheet(provider: editingCustomProvider) { provider in
+                    // Check if provider already exists by ID to determine if we're updating or adding
+                    if customProviderService.providers.contains(where: { $0.id == provider.id }) {
+                        customProviderService.updateProvider(provider)
+                    } else {
+                        customProviderService.addProvider(provider)
+                    }
                     editingCustomProvider = nil
-                    showCustomProviderSheet = true
-                },
-                onDismiss: {
-                    showAddProviderPopover = false
+                    syncCustomProvidersToConfig()
                 }
-            )
-        }
-        .sheet(item: $switchingAccount) { account in
-            SwitchAccountSheet(
-                accountEmail: account.displayName,
-                onDismiss: {
-                    switchingAccount = nil
+            }
+            .sheet(isPresented: $showWarpConnectionSheet) {
+                WarpConnectionSheet(token: editingWarpToken) { name, token in
+                    if let existing = editingWarpToken {
+                        var updated = existing
+                        updated.name = name
+                        updated.token = token
+                        warpService.updateToken(updated)
+                    } else {
+                        warpService.addToken(name: name, token: token)
+                    }
+                    editingWarpToken = nil
+                    Task { await viewModel.refreshAutoDetectedProviders() }
                 }
-            )
-            .environment(viewModel)
+            }
+            .sheet(isPresented: $showAddProviderPopover) {
+                AddProviderPopover(
+                    providers: addableProviders,
+                    existingCounts: providerAccountCounts,
+                    onSelectProvider: { provider in
+                        handleAddProvider(provider)
+                    },
+                    onScanIDEs: {
+                        showIDEScanSheet = true
+                    },
+                    onAddCustomProvider: {
+                        editingCustomProvider = nil
+                        showCustomProviderSheet = true
+                    },
+                    onDismiss: {
+                        showAddProviderPopover = false
+                    }
+                )
+            }
+            .sheet(item: $switchingAccount) { account in
+                SwitchAccountSheet(
+                    accountEmail: account.displayName,
+                    onDismiss: {
+                        switchingAccount = nil
+                    }
+                )
+                .environment(viewModel)
+            }
         }
     }
     
@@ -457,92 +460,94 @@ struct CustomProviderRow: View {
     @State private var showDeleteConfirmation = false
     
     var body: some View {
-        HStack(spacing: 12) {
-            // Provider type icon
-            ZStack {
-                Circle()
-                    .fill(provider.type.color.opacity(0.1))
-                    .frame(width: 32, height: 32)
-                
-                Image(provider.type.providerIconName)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 18, height: 18)
-            }
+        WithPerceptionTracking {
+            HStack(spacing: 12) {
+                // Provider type icon
+                ZStack {
+                    Circle()
+                        .fill(provider.type.color.opacity(0.1))
+                        .frame(width: 32, height: 32)
             
-            // Provider info
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
-                    Text(provider.name)
-                        .fontWeight(.medium)
-                    
-                    if !provider.isEnabled {
-                        Text("customProviders.disabled".localized())
-                            .font(.caption2)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.secondary.opacity(0.2))
+                    Image(provider.type.providerIconName)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 18, height: 18)
+                }
+        
+                // Provider info
+                VStack(alignment: .leading, spacing: 2) {
+                    HStack(spacing: 6) {
+                        Text(provider.name)
+                            .fontWeight(.medium)
+                
+                        if !provider.isEnabled {
+                            Text("customProviders.disabled".localized())
+                                .font(.caption2)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.secondary.opacity(0.2))
+                                .foregroundStyle(.secondary)
+                                .clipShape(Capsule())
+                        }
+                    }
+            
+                    HStack(spacing: 6) {
+                        Text(provider.type.localizedDisplayName)
+                            .font(.caption)
                             .foregroundStyle(.secondary)
-                            .clipShape(Capsule())
+                
+                        Text("•")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                
+                        let keyCount = provider.apiKeys.count
+                        Text("\(keyCount) \(keyCount == 1 ? "customProviders.key".localized() : "customProviders.keys".localized())")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
                     }
                 }
-                
-                HStack(spacing: 6) {
-                    Text(provider.type.localizedDisplayName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    
-                    Text("•")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                    
-                    let keyCount = provider.apiKeys.count
-                    Text("\(keyCount) \(keyCount == 1 ? "customProviders.key".localized() : "customProviders.keys".localized())")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
+        
+                Spacer()
+        
+                // Toggle button
+                Button {
+                    onToggle()
+                } label: {
+                    Image(systemName: provider.isEnabled ? "checkmark.circle.fill" : "circle")
+                        .foregroundStyle(provider.isEnabled ? .green : .secondary)
+                }
+                .buttonStyle(.subtle)
+                .help(provider.isEnabled ? "customProviders.disable".localized() : "customProviders.enable".localized())
+            }
+            .contextMenu {
+                Button {
+                    onEdit()
+                } label: {
+                    Label("action.edit".localized(), systemImage: "pencil")
+                }
+        
+                Button {
+                    onToggle()
+                } label: {
+                    Label(provider.isEnabled ? "customProviders.disable".localized() : "customProviders.enable".localized(), systemImage: provider.isEnabled ? "xmark.circle" : "checkmark.circle")
+                }
+        
+                Divider()
+        
+                Button(role: .destructive) {
+                    showDeleteConfirmation = true
+                } label: {
+                    Label("action.delete".localized(), systemImage: "trash")
                 }
             }
-            
-            Spacer()
-            
-            // Toggle button
-            Button {
-                onToggle()
-            } label: {
-                Image(systemName: provider.isEnabled ? "checkmark.circle.fill" : "circle")
-                    .foregroundStyle(provider.isEnabled ? .green : .secondary)
+            .confirmationDialog("customProviders.deleteConfirm".localized(), isPresented: $showDeleteConfirmation) {
+                Button("action.delete".localized(), role: .destructive) {
+                    onDelete()
+                }
+                Button("action.cancel".localized(), role: .cancel) {}
+            } message: {
+                Text("customProviders.deleteMessage".localized())
             }
-            .buttonStyle(.subtle)
-            .help(provider.isEnabled ? "customProviders.disable".localized() : "customProviders.enable".localized())
-        }
-        .contextMenu {
-            Button {
-                onEdit()
-            } label: {
-                Label("action.edit".localized(), systemImage: "pencil")
-            }
-            
-            Button {
-                onToggle()
-            } label: {
-                Label(provider.isEnabled ? "customProviders.disable".localized() : "customProviders.enable".localized(), systemImage: provider.isEnabled ? "xmark.circle" : "checkmark.circle")
-            }
-            
-            Divider()
-            
-            Button(role: .destructive) {
-                showDeleteConfirmation = true
-            } label: {
-                Label("action.delete".localized(), systemImage: "trash")
-            }
-        }
-        .confirmationDialog("customProviders.deleteConfirm".localized(), isPresented: $showDeleteConfirmation) {
-            Button("action.delete".localized(), role: .destructive) {
-                onDelete()
-            }
-            Button("action.cancel".localized(), role: .cancel) {}
-        } message: {
-            Text("customProviders.deleteMessage".localized())
         }
     }
 }
@@ -554,19 +559,21 @@ struct MenuBarBadge: View {
     let onTap: () -> Void
 
     var body: some View {
-        Button(action: onTap) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(isSelected ? Color.blue.opacity(0.1) : Color.clear)
-                    .frame(width: 28, height: 28)
+        WithPerceptionTracking {
+            Button(action: onTap) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(isSelected ? Color.blue.opacity(0.1) : Color.clear)
+                        .frame(width: 28, height: 28)
 
-                Image(systemName: isSelected ? "chart.bar.fill" : "chart.bar")
-                    .font(.system(size: 14))
-                    .foregroundStyle(isSelected ? .blue : .secondary)
+                    Image(systemName: isSelected ? "chart.bar.fill" : "chart.bar")
+                        .font(.system(size: 14))
+                        .foregroundStyle(isSelected ? .blue : .secondary)
+                }
             }
+            .buttonStyle(.plain)
+            .nativeTooltip(isSelected ? "menubar.hideFromMenuBar".localized() : "menubar.showOnMenuBar".localized())
         }
-        .buttonStyle(.plain)
-        .nativeTooltip(isSelected ? "menubar.hideFromMenuBar".localized() : "menubar.showOnMenuBar".localized())
     }
 }
 
@@ -700,13 +707,15 @@ private extension View {
 
 struct MenuBarHintView: View {
     var body: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "chart.bar.fill")
-                .foregroundStyle(.blue)
-                .font(.caption2)
-            Text("menubar.hint".localized())
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+        WithPerceptionTracking {
+            HStack(spacing: 6) {
+                Image(systemName: "chart.bar.fill")
+                    .foregroundStyle(.blue)
+                    .font(.caption2)
+                Text("menubar.hint".localized())
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 }
@@ -739,100 +748,102 @@ struct OAuthSheet: View {
     }
     
     var body: some View {
-        VStack(spacing: 28) {
-            ProviderIcon(provider: provider, size: 64)
+        WithPerceptionTracking {
+            VStack(spacing: 28) {
+                ProviderIcon(provider: provider, size: 64)
+        
+                VStack(spacing: 8) {
+                    Text("oauth.connect".localized() + " " + provider.displayName)
+                        .font(.title2)
+                        .fontWeight(.bold)
             
-            VStack(spacing: 8) {
-                Text("oauth.connect".localized() + " " + provider.displayName)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                
-                Text("oauth.authenticateWith".localized() + " " + provider.displayName)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
-            
-            if provider == .gemini {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("oauth.projectId".localized())
+                    Text("oauth.authenticateWith".localized() + " " + provider.displayName)
                         .font(.subheadline)
-                        .fontWeight(.medium)
-                    TextField("oauth.projectIdPlaceholder".localized(), text: $projectId)
-                        .textFieldStyle(.roundedBorder)
+                        .foregroundStyle(.secondary)
                 }
-                .frame(maxWidth: 320)
-            }
-            
-            if provider == .kiro {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("oauth.authMethod".localized())
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    Picker("", selection: $selectedKiroMethod) {
-                        ForEach(kiroAuthMethods, id: \.self) { method in
-                            Text(method.displayName).tag(method)
-                        }
+        
+                if provider == .gemini {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("oauth.projectId".localized())
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                        TextField("oauth.projectIdPlaceholder".localized(), text: $projectId)
+                            .textFieldStyle(.roundedBorder)
                     }
-                    .pickerStyle(.menu)
-                    .labelsHidden()
-                    
+                    .frame(maxWidth: 320)
+                }
+        
+                if provider == .kiro {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("oauth.authMethod".localized())
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                        Picker("", selection: $selectedKiroMethod) {
+                            ForEach(kiroAuthMethods, id: \.self) { method in
+                                Text(method.displayName).tag(method)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .labelsHidden()
+                
 
-                }
-                .frame(maxWidth: 320)
-            }
-            
-            if let state = viewModel.oauthState, state.provider == provider {
-                OAuthStatusView(status: state.status, error: state.error, state: state.state, provider: provider)
-                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
-            }
-            
-            HStack(spacing: 16) {
-                Button("action.cancel".localized(), role: .cancel) {
-                    viewModel.cancelOAuth()
-                    onDismiss()
-                }
-                .buttonStyle(.bordered)
-                
-                if isError {
-                    Button {
-                        hasStartedAuth = false
-                        Task {
-                            await viewModel.startOAuth(for: provider, projectId: projectId.isEmpty ? nil : projectId, authMethod: provider == .kiro ? selectedKiroMethod : nil)
-                        }
-                    } label: {
-                        Label("oauth.retry".localized(), systemImage: "arrow.clockwise")
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.orange)
-                } else if !isSuccess {
-                    Button {
-                        hasStartedAuth = true
-                        Task {
-                            await viewModel.startOAuth(for: provider, projectId: projectId.isEmpty ? nil : projectId, authMethod: provider == .kiro ? selectedKiroMethod : nil)
-                        }
-                    } label: {
-                        if isPolling {
-                            SmallProgressView()
-                        } else {
-                            Label("oauth.authenticate".localized(), systemImage: "key.fill")
-                        }
+                    .frame(maxWidth: 320)
+                }
+        
+                if let state = viewModel.oauthState, state.provider == provider {
+                    OAuthStatusView(status: state.status, error: state.error, state: state.state, provider: provider)
+                        .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                }
+        
+                HStack(spacing: 16) {
+                    Button("action.cancel".localized(), role: .cancel) {
+                        viewModel.cancelOAuth()
+                        onDismiss()
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(provider.color)
-                    .disabled(isPolling)
+                    .buttonStyle(.bordered)
+            
+                    if isError {
+                        Button {
+                            hasStartedAuth = false
+                            Task {
+                                await viewModel.startOAuth(for: provider, projectId: projectId.isEmpty ? nil : projectId, authMethod: provider == .kiro ? selectedKiroMethod : nil)
+                            }
+                        } label: {
+                            Label("oauth.retry".localized(), systemImage: "arrow.clockwise")
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.orange)
+                    } else if !isSuccess {
+                        Button {
+                            hasStartedAuth = true
+                            Task {
+                                await viewModel.startOAuth(for: provider, projectId: projectId.isEmpty ? nil : projectId, authMethod: provider == .kiro ? selectedKiroMethod : nil)
+                            }
+                        } label: {
+                            if isPolling {
+                                SmallProgressView()
+                            } else {
+                                Label("oauth.authenticate".localized(), systemImage: "key.fill")
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(provider.color)
+                        .disabled(isPolling)
+                    }
                 }
             }
-        }
-        .padding(40)
-        .frame(width: 480)
-        .frame(minHeight: 350)
-        .fixedSize(horizontal: false, vertical: true)
-        .animation(.easeInOut(duration: 0.2), value: viewModel.oauthState?.status)
-        .onChange(of: viewModel.oauthState?.status) { _, newStatus in
-            if newStatus == .success {
-                Task {
-                    try? await Task.sleep(nanoseconds: 1_500_000_000)
-                    onDismiss()
+            .padding(40)
+            .frame(width: 480)
+            .frame(minHeight: 350)
+            .fixedSize(horizontal: false, vertical: true)
+            .animation(.easeInOut(duration: 0.2), value: viewModel.oauthState?.status)
+            .onChange(of: viewModel.oauthState?.status) { _, newStatus in
+                if newStatus == .success {
+                    Task {
+                        try? await Task.sleep(nanoseconds: 1_500_000_000)
+                        onDismiss()
+                    }
                 }
             }
         }
@@ -849,127 +860,129 @@ private struct OAuthStatusView: View {
     @State private var rotationAngle: Double = 0
     
     var body: some View {
-        Group {
-            switch status {
-            case .waiting:
-                VStack(spacing: 12) {
-                    ProgressView()
-                        .controlSize(.large)
-                    Text("oauth.openingBrowser".localized())
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.vertical, 16)
-                
-            case .polling:
-                VStack(spacing: 12) {
-                    ZStack {
-                        Circle()
-                            .stroke(provider.color.opacity(0.2), lineWidth: 4)
-                            .frame(width: 60, height: 60)
-                        
-                        Circle()
-                            .trim(from: 0, to: 0.7)
-                            .stroke(provider.color, style: StrokeStyle(lineWidth: 4, lineCap: .round))
-                            .frame(width: 60, height: 60)
-                            .rotationEffect(.degrees(rotationAngle - 90))
-                            .onAppear {
-                                withAnimation(.linear(duration: 1).repeatForever(autoreverses: false)) {
-                                    rotationAngle = 360
-                                }
-                            }
-                        
-                        Image(systemName: "person.badge.key.fill")
-                            .font(.title2)
-                            .foregroundStyle(provider.color)
+        WithPerceptionTracking {
+            Group {
+                switch status {
+                case .waiting:
+                    VStack(spacing: 12) {
+                        ProgressView()
+                            .controlSize(.large)
+                        Text("oauth.openingBrowser".localized())
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
                     }
+                    .padding(.vertical, 16)
+            
+                case .polling:
+                    VStack(spacing: 12) {
+                        ZStack {
+                            Circle()
+                                .stroke(provider.color.opacity(0.2), lineWidth: 4)
+                                .frame(width: 60, height: 60)
                     
-                    // For Copilot Device Code flow, show device code with copy button
-                    if provider == .copilot, let deviceCode = state, !deviceCode.isEmpty {
-                        VStack(spacing: 8) {
-                            Text("oauth.enterCodeInBrowser".localized())
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                            
-                            HStack(spacing: 12) {
-                                Text(deviceCode)
-                                    .font(.system(size: 24, weight: .bold, design: .monospaced))
-                                    .foregroundStyle(provider.color)
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 8)
-                                    .background(provider.color.opacity(0.1))
-                                    .cornerRadius(8)
-                                
-                                Button {
-                                    NSPasteboard.general.clearContents()
-                                    NSPasteboard.general.setString(deviceCode, forType: .string)
-                                } label: {
-                                    Image(systemName: "doc.on.doc")
-                                        .font(.title3)
+                            Circle()
+                                .trim(from: 0, to: 0.7)
+                                .stroke(provider.color, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                                .frame(width: 60, height: 60)
+                                .rotationEffect(.degrees(rotationAngle - 90))
+                                .onAppear {
+                                    withAnimation(.linear(duration: 1).repeatForever(autoreverses: false)) {
+                                        rotationAngle = 360
+                                    }
                                 }
-                                .buttonStyle(.subtle)
-                                .help("action.copyCode".localized())
-                            }
+                    
+                            Image(systemName: "person.badge.key.fill")
+                                .font(.title2)
+                                .foregroundStyle(provider.color)
+                        }
+                
+                        // For Copilot Device Code flow, show device code with copy button
+                        if provider == .copilot, let deviceCode = state, !deviceCode.isEmpty {
+                            VStack(spacing: 8) {
+                                Text("oauth.enterCodeInBrowser".localized())
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                        
+                                HStack(spacing: 12) {
+                                    Text(deviceCode)
+                                        .font(.system(size: 24, weight: .bold, design: .monospaced))
+                                        .foregroundStyle(provider.color)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 8)
+                                        .background(provider.color.opacity(0.1))
+                                        .cornerRadius(8)
                             
+                                    Button {
+                                        NSPasteboard.general.clearContents()
+                                        NSPasteboard.general.setString(deviceCode, forType: .string)
+                                    } label: {
+                                        Image(systemName: "doc.on.doc")
+                                            .font(.title3)
+                                    }
+                                    .buttonStyle(.subtle)
+                                    .help("action.copyCode".localized())
+                                }
+                        
+                                Text("oauth.waitingForAuth".localized())
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        } else if provider == .copilot, let message = error {
+                            Text(message)
+                                .font(.caption)
+                                .foregroundStyle(.primary)
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: 350)
+                        } else {
                             Text("oauth.waitingForAuth".localized())
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                    
+                            Text("oauth.completeBrowser".localized())
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
-                    } else if provider == .copilot, let message = error {
-                        Text(message)
-                            .font(.caption)
-                            .foregroundStyle(.primary)
-                            .multilineTextAlignment(.center)
-                            .frame(maxWidth: 350)
-                    } else {
-                        Text("oauth.waitingForAuth".localized())
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                        
-                        Text("oauth.completeBrowser".localized())
+                    }
+                    .padding(.vertical, 16)
+            
+                case .success:
+                    VStack(spacing: 12) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 48))
+                            .foregroundStyle(.green)
+                
+                        Text("oauth.success".localized())
+                            .font(.headline)
+                            .foregroundStyle(.green)
+                
+                        Text("oauth.closingSheet".localized())
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
-                }
-                .padding(.vertical, 16)
+                    .padding(.vertical, 16)
+            
+                case .error:
+                    VStack(spacing: 12) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 48))
+                            .foregroundStyle(.red)
                 
-            case .success:
-                VStack(spacing: 12) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 48))
-                        .foregroundStyle(.green)
-                    
-                    Text("oauth.success".localized())
-                        .font(.headline)
-                        .foregroundStyle(.green)
-                    
-                    Text("oauth.closingSheet".localized())
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.vertical, 16)
+                        Text("oauth.failed".localized())
+                            .font(.headline)
+                            .foregroundStyle(.red)
                 
-            case .error:
-                VStack(spacing: 12) {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 48))
-                        .foregroundStyle(.red)
-                    
-                    Text("oauth.failed".localized())
-                        .font(.headline)
-                        .foregroundStyle(.red)
-                    
-                    if let error = error {
-                        Text(error)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                            .frame(maxWidth: 300)
+                        if let error = error {
+                            Text(error)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: 300)
+                        }
                     }
+                    .padding(.vertical, 16)
                 }
-                .padding(.vertical, 16)
             }
+            .frame(minHeight: 100)
         }
-        .frame(minHeight: 100)
     }
 }

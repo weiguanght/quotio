@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Perception
 
 /// Represents a group of accounts for a single provider
 struct ProviderAccountsGroupData: Identifiable {
@@ -41,15 +42,17 @@ struct ProviderAccountsGroup: View {
     @State private var isExpanded: Bool = true
     
     var body: some View {
-        DisclosureGroup(isExpanded: $isExpanded) {
-            ForEach(group.accounts) { account in
-                AccountRow(
-                    account: account,
-                    onDelete: account.canDelete ? { onDeleteAccount?(account) } : nil
-                )
+        WithPerceptionTracking {
+            DisclosureGroup(isExpanded: $isExpanded) {
+                ForEach(group.accounts) { account in
+                    AccountRow(
+                        account: account,
+                        onDelete: account.canDelete ? { onDeleteAccount?(account) } : nil
+                    )
+                }
+            } label: {
+                providerLabel
             }
-        } label: {
-            providerLabel
         }
     }
     
@@ -99,22 +102,24 @@ struct AllAccountsSection: View {
     }
     
     var body: some View {
-        Section {
-            if accounts.isEmpty {
-                emptyState
-            } else {
-                ForEach(groups) { group in
-                    ProviderAccountsGroup(
-                        group: group,
-                        onDeleteAccount: onDeleteAccount
-                    )
+        WithPerceptionTracking {
+            Section {
+                if accounts.isEmpty {
+                    emptyState
+                } else {
+                    ForEach(groups) { group in
+                        ProviderAccountsGroup(
+                            group: group,
+                            onDeleteAccount: onDeleteAccount
+                        )
+                    }
                 }
-            }
-        } header: {
-            sectionHeader
-        } footer: {
-            if !accounts.isEmpty {
-                MenuBarHintView()
+            } header: {
+                sectionHeader
+            } footer: {
+                if !accounts.isEmpty {
+                    MenuBarHintView()
+                }
             }
         }
     }

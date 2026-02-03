@@ -4,30 +4,33 @@
 //
 
 import SwiftUI
+import Perception
 
 struct ModeSelectionStep: View {
-    @Bindable var viewModel: OnboardingViewModel
+    @Perception.Bindable var viewModel: OnboardingViewModel
     
     var body: some View {
-        VStack(spacing: 24) {
-            headerSection
-            
-            VStack(spacing: 12) {
-                ForEach(OperatingMode.allCases) { mode in
-                    OperatingModeCard(
-                        mode: mode,
-                        isSelected: viewModel.selectedMode == mode,
-                        onSelect: { viewModel.selectedMode = mode }
-                    )
+        WithPerceptionTracking {
+            VStack(spacing: 24) {
+                headerSection
+        
+                VStack(spacing: 12) {
+                    ForEach(OperatingMode.allCases) { mode in
+                        OperatingModeCard(
+                            mode: mode,
+                            isSelected: viewModel.selectedMode == mode,
+                            onSelect: { viewModel.selectedMode = mode }
+                        )
+                    }
                 }
+                .frame(maxWidth: 520)
+        
+                Spacer()
+        
+                navigationButtons
             }
-            .frame(maxWidth: 520)
-            
-            Spacer()
-            
-            navigationButtons
+            .padding(40)
         }
-        .padding(40)
     }
     
     private var headerSection: some View {
@@ -73,50 +76,52 @@ struct OperatingModeCard: View {
     @State private var isHovered = false
     
     var body: some View {
-        HStack(spacing: 14) {
-            iconView
-            
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 8) {
-                    Text(mode.displayName)
-                        .font(.headline)
-                    
-                    if let badge = mode.badge {
-                        Text(badge)
-                            .font(.caption2)
-                            .fontWeight(.medium)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(badgeColor.opacity(0.15))
-                            .foregroundStyle(badgeColor)
-                            .clipShape(Capsule())
-                    }
-                }
+        WithPerceptionTracking {
+            HStack(spacing: 14) {
+                iconView
+        
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        Text(mode.displayName)
+                            .font(.headline)
                 
-                Text(mode.description)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                        if let badge = mode.badge {
+                            Text(badge)
+                                .font(.caption2)
+                                .fontWeight(.medium)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(badgeColor.opacity(0.15))
+                                .foregroundStyle(badgeColor)
+                                .clipShape(Capsule())
+                        }
+                    }
+            
+                    Text(mode.description)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+        
+                Spacer()
+        
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.title2)
+                    .foregroundStyle(isSelected ? .blue : .secondary.opacity(0.4))
             }
-            
-            Spacer()
-            
-            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                .font(.title2)
-                .foregroundStyle(isSelected ? .blue : .secondary.opacity(0.4))
+            .padding(16)
+            .background(backgroundView)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(borderColor, lineWidth: isSelected ? 2 : 1)
+            )
+            .scaleEffect(isHovered ? 1.01 : 1.0)
+            .animation(.easeInOut(duration: 0.15), value: isHovered)
+            .animation(.easeInOut(duration: 0.15), value: isSelected)
+            .contentShape(Rectangle())
+            .onTapGesture { onSelect() }
+            .onHover { isHovered = $0 }
         }
-        .padding(16)
-        .background(backgroundView)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(borderColor, lineWidth: isSelected ? 2 : 1)
-        )
-        .scaleEffect(isHovered ? 1.01 : 1.0)
-        .animation(.easeInOut(duration: 0.15), value: isHovered)
-        .animation(.easeInOut(duration: 0.15), value: isSelected)
-        .contentShape(Rectangle())
-        .onTapGesture { onSelect() }
-        .onHover { isHovered = $0 }
     }
     
     private var iconView: some View {

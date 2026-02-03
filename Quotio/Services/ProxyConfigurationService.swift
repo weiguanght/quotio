@@ -6,10 +6,10 @@
 //
 
 import Foundation
-import Observation
+import Perception
 
 @MainActor
-@Observable
+@Perceptible
 final class ProxyConfigurationService {
     static let shared = ProxyConfigurationService()
 

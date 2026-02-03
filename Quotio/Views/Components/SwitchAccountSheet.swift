@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Perception
 
 /// Sheet for confirming and executing Antigravity account switch
 struct SwitchAccountSheet: View {
@@ -25,22 +26,24 @@ struct SwitchAccountSheet: View {
     }
     
     var body: some View {
-        VStack(spacing: 20) {
-            // Header
-            headerView
-            
-            Divider()
-            
-            // Content based on state
-            contentView
-            
-            Divider()
-            
-            // Actions
-            actionButtons
+        WithPerceptionTracking {
+            VStack(spacing: 20) {
+                // Header
+                headerView
+        
+                Divider()
+        
+                // Content based on state
+                contentView
+        
+                Divider()
+        
+                // Actions
+                actionButtons
+            }
+            .padding(24)
+            .frame(width: 380)
         }
-        .padding(24)
-        .frame(width: 380)
     }
     
     // MARK: - Header

@@ -7,10 +7,11 @@
 //
 
 import Foundation
+import Perception
 
 /// Orchestrates Antigravity account switching with proper error handling and rollback
 @MainActor
-@Observable
+@Perceptible
 final class AntigravityAccountSwitcher {
     
     // MARK: - Singleton

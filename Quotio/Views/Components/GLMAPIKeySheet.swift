@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Perception
 
 struct GLMAPIKeySheet: View {
     @Environment(\.dismiss) private var dismiss
@@ -30,32 +31,34 @@ struct GLMAPIKeySheet: View {
     // MARK: - Body
 
     var body: some View {
-        VStack(spacing: 0) {
-            headerView
+        WithPerceptionTracking {
+            VStack(spacing: 0) {
+                headerView
 
-            Divider()
+                Divider()
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    apiKeySection
-                    endpointSection
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        apiKeySection
+                        endpointSection
+                    }
+                    .padding(20)
                 }
-                .padding(20)
+
+                Divider()
+
+                footerView
             }
-
-            Divider()
-
-            footerView
-        }
-        .frame(width: 480, height: 320)
-        .onAppear {
-            loadProviderData()
-        }
-        .alert("glm.validationError".localized(), isPresented: $showValidationAlert) {
-            Button("action.ok".localized(), role: .cancel) {}
-        } message: {
-            if let error = validationError {
-                Text(error)
+            .frame(width: 480, height: 320)
+            .onAppear {
+                loadProviderData()
+            }
+            .alert("glm.validationError".localized(), isPresented: $showValidationAlert) {
+                Button("action.ok".localized(), role: .cancel) {}
+            } message: {
+                if let error = validationError {
+                    Text(error)
+                }
             }
         }
     }

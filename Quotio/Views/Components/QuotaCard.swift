@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import Perception
 
 struct QuotaCard: View {
     let provider: AIProvider
@@ -49,23 +50,25 @@ struct QuotaCard: View {
     }
     
     var body: some View {
-        GroupBox {
-            VStack(alignment: .leading, spacing: 16) {
-                headerSection
-                
-                if hasRealQuotaData {
-                    realQuotaSection
-                } else {
-                    estimatedQuotaSection
+        WithPerceptionTracking {
+            GroupBox {
+                VStack(alignment: .leading, spacing: 16) {
+                    headerSection
+            
+                    if hasRealQuotaData {
+                        realQuotaSection
+                    } else {
+                        estimatedQuotaSection
+                    }
+            
+                    Divider()
+            
+                    statusBreakdownSection
+            
+                    accountListSection
                 }
-                
-                Divider()
-                
-                statusBreakdownSection
-                
-                accountListSection
+                .padding(4)
             }
-            .padding(4)
         }
     }
     
@@ -220,47 +223,49 @@ private struct QuotaSection: View {
     }
     
     var body: some View {
-        let displayMode = settings.quotaDisplayMode
-        let displayPercent = displayMode.displayValue(from: remainingPercent)
-        
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+        WithPerceptionTracking {
+            let displayMode = settings.quotaDisplayMode
+            let displayPercent = displayMode.displayValue(from: remainingPercent)
+    
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text(title)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+            
+                    Spacer()
+            
+                    HStack(spacing: 8) {
+                        Text(verbatim: "\(Int(displayPercent))% \(displayMode.suffixKey.localized())")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                 
-                Spacer()
-                
-                HStack(spacing: 8) {
-                    Text(verbatim: "\(Int(displayPercent))% \(displayMode.suffixKey.localized())")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    
-                    if resetTime != "—" {
-                        Text("•")
-                            .foregroundStyle(.quaternary)
-                        HStack(spacing: 2) {
-                            Image(systemName: "clock")
-                                .font(.caption2)
-                            Text(verbatim: "reset \(resetTime)")
-                                .font(.caption)
+                        if resetTime != "—" {
+                            Text("•")
+                                .foregroundStyle(.quaternary)
+                            HStack(spacing: 2) {
+                                Image(systemName: "clock")
+                                    .font(.caption2)
+                                Text(verbatim: "reset \(resetTime)")
+                                    .font(.caption)
+                            }
+                            .foregroundStyle(.secondary)
                         }
-                        .foregroundStyle(.secondary)
                     }
                 }
-            }
-            
-            GeometryReader { proxy in
-                ZStack(alignment: .leading) {
-                    Capsule()
-                        .fill(.quaternary)
-                    Capsule()
-                        .fill(tint)
-                        .frame(width: proxy.size.width * min(1, progressWidth))
-                        .animation(.smooth(duration: 0.3), value: progressWidth)
+        
+                GeometryReader { proxy in
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(.quaternary)
+                        Capsule()
+                            .fill(tint)
+                            .frame(width: proxy.size.width * min(1, progressWidth))
+                            .animation(.smooth(duration: 0.3), value: progressWidth)
+                    }
                 }
+                .frame(height: 8)
             }
-            .frame(height: 8)
         }
     }
 }
@@ -273,12 +278,14 @@ private struct StatusBadge: View {
     let color: Color
     
     var body: some View {
-        HStack(spacing: 4) {
-            Circle()
-                .fill(color)
-                .frame(width: 6, height: 6)
-            Text(verbatim: "\(count) \(label)")
-                .foregroundStyle(count > 0 ? .primary : .secondary)
+        WithPerceptionTracking {
+            HStack(spacing: 4) {
+                Circle()
+                    .fill(color)
+                    .frame(width: 6, height: 6)
+                Text(verbatim: "\(count) \(label)")
+                    .foregroundStyle(count > 0 ? .primary : .secondary)
+            }
         }
     }
 }
@@ -294,51 +301,53 @@ private struct QuotaAccountRow: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(account.statusColor)
-                    .frame(width: 8, height: 8)
+        WithPerceptionTracking {
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 8) {
+                    Circle()
+                        .fill(account.statusColor)
+                        .frame(width: 8, height: 8)
 
-                Text(displayName)
-                    .font(.caption)
-                    .lineLimit(1)
-
-                Spacer()
-
-                if let quotaData = quotaData, !quotaData.models.isEmpty {
-                    HStack(spacing: 4) {
-                        ForEach(quotaData.models.prefix(2)) { model in
-                            Text(verbatim: "\(model.percentage)%")
-                                .font(.caption2)
-                                .foregroundStyle(model.percentage > 50 ? .green : (model.percentage > 20 ? .orange : .red))
-                        }
-                    }
-                } else if let statusMessage = account.statusMessage, !statusMessage.isEmpty {
-                    Text(statusMessage)
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                } else {
-                    Text(account.status.capitalized)
+                    Text(displayName)
                         .font(.caption)
-                        .foregroundStyle(account.statusColor)
-                }
-            }
+                        .lineLimit(1)
 
-            // Show token expiry for Kiro accounts
-            if let quotaData = quotaData, let tokenExpiry = quotaData.formattedTokenExpiry {
-                HStack(spacing: 4) {
-                    Image(systemName: "key")
-                        .font(.caption2)
-                    Text(tokenExpiry)
-                        .font(.caption2)
+                    Spacer()
+
+                    if let quotaData = quotaData, !quotaData.models.isEmpty {
+                        HStack(spacing: 4) {
+                            ForEach(quotaData.models.prefix(2)) { model in
+                                Text(verbatim: "\(model.percentage)%")
+                                    .font(.caption2)
+                                    .foregroundStyle(model.percentage > 50 ? .green : (model.percentage > 20 ? .orange : .red))
+                            }
+                        }
+                    } else if let statusMessage = account.statusMessage, !statusMessage.isEmpty {
+                        Text(statusMessage)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    } else {
+                        Text(account.status.capitalized)
+                            .font(.caption)
+                            .foregroundStyle(account.statusColor)
+                    }
                 }
-                .foregroundStyle(.secondary)
-                .padding(.leading, 16)
+
+                // Show token expiry for Kiro accounts
+                if let quotaData = quotaData, let tokenExpiry = quotaData.formattedTokenExpiry {
+                    HStack(spacing: 4) {
+                        Image(systemName: "key")
+                            .font(.caption2)
+                        Text(tokenExpiry)
+                            .font(.caption2)
+                    }
+                    .foregroundStyle(.secondary)
+                    .padding(.leading, 16)
+                }
             }
+            .padding(.vertical, 2)
         }
-        .padding(.vertical, 2)
     }
 }
 

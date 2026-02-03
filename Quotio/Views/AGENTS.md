@@ -64,7 +64,7 @@ struct MyScreen: View {
 @Environment(QuotaViewModel.self) private var viewModel
 
 // For two-way binding
-@Bindable var vm = viewModel
+@Perception.Bindable var vm = viewModel
 
 // Local UI state
 @State private var isExpanded = false

@@ -4,43 +4,43 @@
 
 Symbol maps for 2 large files in this module.
 
-## Quotio/Models/MenuBarSettings.swift (630 lines)
+## Quotio/Models/MenuBarSettings.swift (631 lines)
 
 | Line | Kind | Name | Visibility |
 | ---- | ---- | ---- | ---------- |
-| 13 | mod | extension String | (internal) |
-| 17 | fn | masked | (internal) |
-| 38 | fn | masked | (internal) |
-| 46 | struct | MenuBarQuotaItem | (internal) |
-| 70 | enum | AppearanceMode | (internal) |
-| 97 | class | AppearanceManager | (internal) |
-| 112 | method | init | (private) |
-| 119 | fn | applyAppearance | (internal) |
-| 134 | enum | MenuBarColorMode | (internal) |
-| 151 | enum | QuotaDisplayMode | (internal) |
-| 165 | fn | displayValue | (internal) |
-| 183 | enum | QuotaDisplayStyle | (internal) |
-| 210 | enum | RefreshCadence | (internal) |
-| 253 | enum | TotalUsageMode | (internal) |
-| 270 | enum | ModelAggregationMode | (internal) |
-| 286 | mod | extension MenuBarSettingsManager | (internal) |
-| 334 | fn | calculateTotalUsagePercent | (internal) |
-| 359 | fn | aggregateModelPercentages | (internal) |
-| 376 | class | RefreshSettingsManager | (internal) |
-| 394 | method | init | (private) |
-| 404 | struct | MenuBarQuotaDisplayItem | (internal) |
-| 421 | class | MenuBarSettingsManager | (internal) |
-| 513 | method | init | (private) |
-| 551 | fn | saveSelectedItems | (private) |
-| 557 | fn | loadSelectedItems | (private) |
-| 565 | fn | addItem | (internal) |
-| 579 | fn | removeItem | (internal) |
-| 585 | fn | isSelected | (internal) |
-| 590 | fn | toggleItem | (internal) |
-| 600 | fn | pruneInvalidItems | (internal) |
-| 604 | fn | autoSelectNewAccounts | (internal) |
-| 619 | fn | enforceMaxItems | (private) |
-| 626 | fn | clampedMenuBarMax | (private) |
+| 14 | mod | extension String | (internal) |
+| 18 | fn | masked | (internal) |
+| 39 | fn | masked | (internal) |
+| 47 | struct | MenuBarQuotaItem | (internal) |
+| 71 | enum | AppearanceMode | (internal) |
+| 98 | class | AppearanceManager | (internal) |
+| 113 | method | init | (private) |
+| 120 | fn | applyAppearance | (internal) |
+| 135 | enum | MenuBarColorMode | (internal) |
+| 152 | enum | QuotaDisplayMode | (internal) |
+| 166 | fn | displayValue | (internal) |
+| 184 | enum | QuotaDisplayStyle | (internal) |
+| 211 | enum | RefreshCadence | (internal) |
+| 254 | enum | TotalUsageMode | (internal) |
+| 271 | enum | ModelAggregationMode | (internal) |
+| 287 | mod | extension MenuBarSettingsManager | (internal) |
+| 335 | fn | calculateTotalUsagePercent | (internal) |
+| 360 | fn | aggregateModelPercentages | (internal) |
+| 377 | class | RefreshSettingsManager | (internal) |
+| 395 | method | init | (private) |
+| 405 | struct | MenuBarQuotaDisplayItem | (internal) |
+| 422 | class | MenuBarSettingsManager | (internal) |
+| 514 | method | init | (private) |
+| 552 | fn | saveSelectedItems | (private) |
+| 558 | fn | loadSelectedItems | (private) |
+| 566 | fn | addItem | (internal) |
+| 580 | fn | removeItem | (internal) |
+| 586 | fn | isSelected | (internal) |
+| 591 | fn | toggleItem | (internal) |
+| 601 | fn | pruneInvalidItems | (internal) |
+| 605 | fn | autoSelectNewAccounts | (internal) |
+| 620 | fn | enforceMaxItems | (private) |
+| 627 | fn | clampedMenuBarMax | (private) |
 
 ## Quotio/Models/Models.swift (607 lines)
 

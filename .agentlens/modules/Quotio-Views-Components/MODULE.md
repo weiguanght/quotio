@@ -8,33 +8,33 @@
 
 | File | Lines | Large |
 | ---- | ----- | ----- |
-| `Quotio/Views/Components/AccountRow.swift` | 393 |  |
-| `Quotio/Views/Components/AccountsEmptyState.swift` | 80 |  |
-| `Quotio/Views/Components/AddProviderPopover.swift` | 158 |  |
-| `Quotio/Views/Components/AgentCard.swift` | 147 |  |
-| `Quotio/Views/Components/AgentConfigSheet.swift` | 989 | 📊 |
-| `Quotio/Views/Components/CurrentModeBadge.swift` | 122 |  |
-| `Quotio/Views/Components/CustomProviderSheet.swift` | 482 |  |
-| `Quotio/Views/Components/ExperimentalBadge.swift` | 40 |  |
-| `Quotio/Views/Components/FallbackSheets.swift` | 278 |  |
-| `Quotio/Views/Components/GLMAPIKeySheet.swift` | 233 |  |
-| `Quotio/Views/Components/IDEScanSheet.swift` | 320 |  |
-| `Quotio/Views/Components/ProviderAccountsGroup.swift` | 227 |  |
-| `Quotio/Views/Components/ProviderDisclosureGroup.swift` | 129 |  |
-| `Quotio/Views/Components/ProviderIcon.swift` | 83 |  |
-| `Quotio/Views/Components/ProxyRequiredView.swift` | 103 |  |
-| `Quotio/Views/Components/QuotaCard.swift` | 382 |  |
-| `Quotio/Views/Components/QuotaProgressBar.swift` | 45 |  |
-| `Quotio/Views/Components/QuotioButtonStyles.swift` | 300 |  |
-| `Quotio/Views/Components/RemoteConnectionSheet.swift` | 331 |  |
-| `Quotio/Views/Components/RingProgressView.swift` | 55 |  |
-| `Quotio/Views/Components/SidebarView.swift` | 21 |  |
-| `Quotio/Views/Components/SmallProgressView.swift` | 94 |  |
-| `Quotio/Views/Components/SwitchAccountSheet.swift` | 266 |  |
-| `Quotio/Views/Components/TunnelSheet.swift` | 390 |  |
-| `Quotio/Views/Components/TunnelStatusBadge.swift` | 81 |  |
-| `Quotio/Views/Components/WarmupSheet.swift` | 354 |  |
-| `Quotio/Views/Components/WarpConnectionSheet.swift` | 122 |  |
+| `Quotio/Views/Components/AccountRow.swift` | 396 |  |
+| `Quotio/Views/Components/AccountsEmptyState.swift` | 83 |  |
+| `Quotio/Views/Components/AddProviderPopover.swift` | 163 |  |
+| `Quotio/Views/Components/AgentCard.swift` | 152 |  |
+| `Quotio/Views/Components/AgentConfigSheet.swift` | 1010 | 📊 |
+| `Quotio/Views/Components/CurrentModeBadge.swift` | 125 |  |
+| `Quotio/Views/Components/CustomProviderSheet.swift` | 485 |  |
+| `Quotio/Views/Components/ExperimentalBadge.swift` | 43 |  |
+| `Quotio/Views/Components/FallbackSheets.swift` | 283 |  |
+| `Quotio/Views/Components/GLMAPIKeySheet.swift` | 236 |  |
+| `Quotio/Views/Components/IDEScanSheet.swift` | 323 |  |
+| `Quotio/Views/Components/ProviderAccountsGroup.swift` | 232 |  |
+| `Quotio/Views/Components/ProviderDisclosureGroup.swift` | 132 |  |
+| `Quotio/Views/Components/ProviderIcon.swift` | 86 |  |
+| `Quotio/Views/Components/ProxyRequiredView.swift` | 106 |  |
+| `Quotio/Views/Components/QuotaCard.swift` | 391 |  |
+| `Quotio/Views/Components/QuotaProgressBar.swift` | 48 |  |
+| `Quotio/Views/Components/QuotioButtonStyles.swift` | 307 |  |
+| `Quotio/Views/Components/RemoteConnectionSheet.swift` | 334 |  |
+| `Quotio/Views/Components/RingProgressView.swift` | 58 |  |
+| `Quotio/Views/Components/SidebarView.swift` | 24 |  |
+| `Quotio/Views/Components/SmallProgressView.swift` | 97 |  |
+| `Quotio/Views/Components/SwitchAccountSheet.swift` | 269 |  |
+| `Quotio/Views/Components/TunnelSheet.swift` | 393 |  |
+| `Quotio/Views/Components/TunnelStatusBadge.swift` | 84 |  |
+| `Quotio/Views/Components/WarmupSheet.swift` | 357 |  |
+| `Quotio/Views/Components/WarpConnectionSheet.swift` | 125 |  |
 
 ## Documentation
 
@@ -47,7 +47,7 @@
 
 ## 🟢 Low Priority
 
-### `NOTE` (Quotio/Views/Components/QuotioButtonStyles.swift:64)
+### `NOTE` (Quotio/Views/Components/QuotioButtonStyles.swift:65)
 
 > @State in ButtonStyle (value type) doesn't reliably preserve state.
 

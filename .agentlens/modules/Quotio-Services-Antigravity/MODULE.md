@@ -8,7 +8,7 @@
 
 | File | Lines | Large |
 | ---- | ----- | ----- |
-| `Quotio/Services/Antigravity/AntigravityAccountSwitcher.swift` | 283 |  |
+| `Quotio/Services/Antigravity/AntigravityAccountSwitcher.swift` | 284 |  |
 | `Quotio/Services/Antigravity/AntigravityDatabaseService.swift` | 378 |  |
 | `Quotio/Services/Antigravity/AntigravityProcessManager.swift` | 206 |  |
 | `Quotio/Services/Antigravity/AntigravityProtobufHandler.swift` | 313 |  |

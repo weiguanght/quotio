@@ -9,7 +9,7 @@
 
 ## 🔴 High Priority
 
-### `WARNING` (Quotio/Services/LaunchAtLoginManager.swift:97)
+### `WARNING` (Quotio/Services/LaunchAtLoginManager.swift:98)
 
 > if app is not in /Applications (registration may fail or be non-persistent)
 
@@ -31,19 +31,19 @@
 
 > Only checks file existence (metadata), does NOT read file content
 
-### `NOTE` (Quotio/Services/Proxy/CLIProxyManager.swift:212)
+### `NOTE` (Quotio/Services/Proxy/CLIProxyManager.swift:213)
 
 > Bridge mode default is registered in AppDelegate.applicationDidFinishLaunching()
 
-### `NOTE` (Quotio/Services/Proxy/CLIProxyManager.swift:302)
+### `NOTE` (Quotio/Services/Proxy/CLIProxyManager.swift:303)
 
 > Changes take effect after proxy restart (CLIProxyAPI does not support live routing API)
 
-### `NOTE` (Quotio/Services/Proxy/CLIProxyManager.swift:1297)
+### `NOTE` (Quotio/Services/Proxy/CLIProxyManager.swift:1298)
 
 > Notification is handled by AtomFeedUpdateService polling
 
-### `NOTE` (Quotio/ViewModels/AgentSetupViewModel.swift:431)
+### `NOTE` (Quotio/ViewModels/AgentSetupViewModel.swift:432)
 
 > Actual fallback resolution happens at request time in ProxyBridge
 

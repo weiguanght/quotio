@@ -7,7 +7,7 @@
 //
 
 import Foundation
-import Observation
+import Perception
 
 // MARK: - Atom Feed Entry
 
@@ -42,7 +42,7 @@ struct CachedFeedState: Codable, Sendable {
 // MARK: - AtomFeedUpdateService
 
 @MainActor
-@Observable
+@Perceptible
 final class AtomFeedUpdateService {
 
     static let shared = AtomFeedUpdateService()
@@ -82,7 +82,7 @@ final class AtomFeedUpdateService {
     private var isPollingEnabled: Bool = false
 
     /// Shared URLSession for all feed requests (avoids creating new sessions per request)
-    @ObservationIgnored
+    @PerceptionIgnored
     private lazy var urlSession: URLSession = {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 15

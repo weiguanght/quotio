@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Perception
 
 // MARK: - Subtle Button Style
 
@@ -70,19 +71,21 @@ struct MenuRowButtonStyle: ButtonStyle {
         @State private var isHovered = false
         
         var body: some View {
-            configuration.label
-                .padding(.vertical, 6)
-                .padding(.horizontal, 8)
-                .background(
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .fill(configuration.isPressed ? hoverColor.opacity(1.5) : (isHovered ? hoverColor : .clear))
-                )
-                .onHover { hovering in
-                    withAnimation(.easeInOut(duration: 0.15)) {
-                        isHovered = hovering
-                    }
-                }
-                .focusEffectDisabled(true)
+            WithPerceptionTracking {
+                    configuration.label
+                        .padding(.vertical, 6)
+                        .padding(.horizontal, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: cornerRadius)
+                                .fill(configuration.isPressed ? hoverColor.opacity(1.5) : (isHovered ? hoverColor : .clear))
+                        )
+                        .onHover { hovering in
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                isHovered = hovering
+                            }
+                        }
+                        .focusEffectDisabled(true)
+            }
         }
     }
 }
@@ -111,17 +114,19 @@ struct GridItemButtonStyle: ButtonStyle {
         @State private var isHovered = false
         
         var body: some View {
-            configuration.label
-                .background(
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .fill(configuration.isPressed ? hoverColor.opacity(1.5) : (isHovered ? hoverColor : .clear))
-                )
-                .onHover { hovering in
-                    withAnimation(.easeInOut(duration: 0.15)) {
-                        isHovered = hovering
-                    }
-                }
-                .focusEffectDisabled(true)
+            WithPerceptionTracking {
+                    configuration.label
+                        .background(
+                            RoundedRectangle(cornerRadius: cornerRadius)
+                                .fill(configuration.isPressed ? hoverColor.opacity(1.5) : (isHovered ? hoverColor : .clear))
+                        )
+                        .onHover { hovering in
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                isHovered = hovering
+                            }
+                        }
+                        .focusEffectDisabled(true)
+            }
         }
     }
 }
@@ -150,18 +155,20 @@ struct ToolbarIconButtonStyle: ButtonStyle {
         @State private var isHovered = false
         
         var body: some View {
-            configuration.label
-                .frame(width: size, height: size)
-                .background(
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .fill(configuration.isPressed ? Color.primary.opacity(0.15) : (isHovered ? Color.primary.opacity(0.08) : .clear))
-                )
-                .onHover { hovering in
-                    withAnimation(.easeInOut(duration: 0.15)) {
-                        isHovered = hovering
-                    }
-                }
-                .focusEffectDisabled(true)
+            WithPerceptionTracking {
+                    configuration.label
+                        .frame(width: size, height: size)
+                        .background(
+                            RoundedRectangle(cornerRadius: cornerRadius)
+                                .fill(configuration.isPressed ? Color.primary.opacity(0.15) : (isHovered ? Color.primary.opacity(0.08) : .clear))
+                        )
+                        .onHover { hovering in
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                isHovered = hovering
+                            }
+                        }
+                        .focusEffectDisabled(true)
+            }
         }
     }
 }

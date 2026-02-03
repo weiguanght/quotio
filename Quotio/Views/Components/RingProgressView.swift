@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Perception
 
 /// Circular progress indicator for quota display
 struct RingProgressView: View {
@@ -20,28 +21,30 @@ struct RingProgressView: View {
     }
     
     var body: some View {
-        ZStack {
-            // Background ring
-            Circle()
-                .stroke(.quaternary, lineWidth: lineWidth)
-            
-            // Progress ring
-            Circle()
-                .trim(from: 0, to: clamped / 100)
-                .stroke(tint, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                .rotationEffect(.degrees(-90))
-                .animation(.smooth(duration: 0.3), value: clamped)
-            
-            // Optional center label
-            if showLabel {
-                Text("\(Int(clamped))%")
-                    .font(.system(size: size * 0.24, weight: .bold))
-                    .monospacedDigit()
+        WithPerceptionTracking {
+            ZStack {
+                // Background ring
+                Circle()
+                    .stroke(.quaternary, lineWidth: lineWidth)
+        
+                // Progress ring
+                Circle()
+                    .trim(from: 0, to: clamped / 100)
+                    .stroke(tint, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                    .animation(.smooth(duration: 0.3), value: clamped)
+        
+                // Optional center label
+                if showLabel {
+                    Text("\(Int(clamped))%")
+                        .font(.system(size: size * 0.24, weight: .bold))
+                        .monospacedDigit()
+                }
             }
+            .frame(width: size, height: size)
+            .accessibilityLabel("usage.ring".localized())
+            .accessibilityValue(String(format: "%lld percent".localized(), Int64(clamped)))
         }
-        .frame(width: size, height: size)
-        .accessibilityLabel("usage.ring".localized())
-        .accessibilityValue(String(format: "%lld percent".localized(), Int64(clamped)))
     }
 }
 

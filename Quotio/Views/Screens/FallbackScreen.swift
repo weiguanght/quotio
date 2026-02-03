@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import Perception
 
 struct FallbackScreen: View {
     @Environment(QuotaViewModel.self) private var viewModel
@@ -27,77 +28,79 @@ struct FallbackScreen: View {
     }
 
     var body: some View {
-        List {
-            // Section 1: Global Settings
-            globalSettingsSection
+        WithPerceptionTracking {
+            List {
+                // Section 1: Global Settings
+                globalSettingsSection
 
-            // Section 2: Active Route Status (only show when there are active routes)
-            if fallbackSettings.isEnabled && !fallbackSettings.activeRouteStates.isEmpty {
-                activeRouteStatusSection
+                // Section 2: Active Route Status (only show when there are active routes)
+                if fallbackSettings.isEnabled && !fallbackSettings.activeRouteStates.isEmpty {
+                    activeRouteStatusSection
+                }
+
+                // Section 3: Virtual Models
+                virtualModelsSection
             }
-
-            // Section 3: Virtual Models
-            virtualModelsSection
-        }
-        .navigationTitle("fallback.title".localized())
-        .toolbar {
-            toolbarContent
-        }
-        .sheet(isPresented: $showAddVirtualModelSheet) {
-            VirtualModelSheet(
-                virtualModel: nil,
-                onSave: { name in
-                    if fallbackSettings.addVirtualModel(name: name) == nil {
-                        showDuplicateNameAlert = true
+            .navigationTitle("fallback.title".localized())
+            .toolbar {
+                toolbarContent
+            }
+            .sheet(isPresented: $showAddVirtualModelSheet) {
+                VirtualModelSheet(
+                    virtualModel: nil,
+                    onSave: { name in
+                        if fallbackSettings.addVirtualModel(name: name) == nil {
+                            showDuplicateNameAlert = true
+                        }
+                    },
+                    onDismiss: {
+                        showAddVirtualModelSheet = false
                     }
-                },
-                onDismiss: {
-                    showAddVirtualModelSheet = false
-                }
-            )
-        }
-        .sheet(item: $editingVirtualModel) { model in
-            VirtualModelSheet(
-                virtualModel: model,
-                onSave: { name in
-                    if !fallbackSettings.renameVirtualModel(id: model.id, newName: name) {
-                        showDuplicateNameAlert = true
+                )
+            }
+            .sheet(item: $editingVirtualModel) { model in
+                VirtualModelSheet(
+                    virtualModel: model,
+                    onSave: { name in
+                        if !fallbackSettings.renameVirtualModel(id: model.id, newName: name) {
+                            showDuplicateNameAlert = true
+                        }
+                    },
+                    onDismiss: {
+                        editingVirtualModel = nil
                     }
-                },
-                onDismiss: {
-                    editingVirtualModel = nil
-                }
-            )
-        }
-        .sheet(item: $addingEntryToModelId) { modelId in
-            let virtualModel = fallbackSettings.virtualModels.first(where: { $0.id == modelId })
-            AddFallbackEntrySheet(
-                virtualModelId: modelId,
-                virtualModelName: virtualModel?.name ?? "",
-                existingEntries: virtualModel?.fallbackEntries ?? [],
-                availableModels: availableModels,
-                onAdd: { provider, modelName in
-                    fallbackSettings.addFallbackEntry(to: modelId, provider: provider, modelName: modelName)
-                },
-                onDismiss: {
-                    addingEntryToModelId = nil
-                }
-            )
-        }
-        .task {
-            await loadModelsIfNeeded()
-        }
-        // Alert when Fallback toggle changes
-        .alert("fallback.reconfigureRequired".localized(), isPresented: $showReconfigureAlert) {
-            Button("action.ok".localized(), role: .cancel) {}
-        } message: {
-            Text("fallback.reconfigureMessage".localized())
-        }
-        // Alert when duplicate virtual model name
-        .alert("fallback.duplicateName".localized(), isPresented: $showDuplicateNameAlert) {
-            Button("action.ok".localized(), role: .cancel) {}
-        } message: {
-            Text("fallback.duplicateNameMessage".localized())
+                )
+            }
+            .sheet(item: $addingEntryToModelId) { modelId in
+                let virtualModel = fallbackSettings.virtualModels.first(where: { $0.id == modelId })
+                AddFallbackEntrySheet(
+                    virtualModelId: modelId,
+                    virtualModelName: virtualModel?.name ?? "",
+                    existingEntries: virtualModel?.fallbackEntries ?? [],
+                    availableModels: availableModels,
+                    onAdd: { provider, modelName in
+                        fallbackSettings.addFallbackEntry(to: modelId, provider: provider, modelName: modelName)
+                    },
+                    onDismiss: {
+                        addingEntryToModelId = nil
+                    }
+                )
+            }
+            .task {
+                await loadModelsIfNeeded()
+            }
+            // Alert when Fallback toggle changes
+            .alert("fallback.reconfigureRequired".localized(), isPresented: $showReconfigureAlert) {
+                Button("action.ok".localized(), role: .cancel) {}
+            } message: {
+                Text("fallback.reconfigureMessage".localized())
+            }
+            // Alert when duplicate virtual model name
+            .alert("fallback.duplicateName".localized(), isPresented: $showDuplicateNameAlert) {
+                Button("action.ok".localized(), role: .cancel) {}
+            } message: {
+                Text("fallback.duplicateNameMessage".localized())
+            }
         }
     }
 
@@ -316,38 +319,40 @@ struct VirtualModelsEmptyState: View {
     let onAdd: () -> Void
 
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "arrow.triangle.branch")
-                .font(.system(size: 40))
-                .foregroundStyle(.tertiary)
-
-            VStack(spacing: 4) {
-                Text("fallback.noVirtualModels".localized())
-                    .font(.headline)
-                    .foregroundStyle(.secondary)
-
-                Text("fallback.noVirtualModelsDescription".localized())
-                    .font(.caption)
+        WithPerceptionTracking {
+            VStack(spacing: 16) {
+                Image(systemName: "arrow.triangle.branch")
+                    .font(.system(size: 40))
                     .foregroundStyle(.tertiary)
-                    .multilineTextAlignment(.center)
-            }
 
-            if isEnabled {
-                Button {
-                    onAdd()
-                } label: {
-                    Label("fallback.createFirst".localized(), systemImage: "plus.circle.fill")
+                VStack(spacing: 4) {
+                    Text("fallback.noVirtualModels".localized())
+                        .font(.headline)
+                        .foregroundStyle(.secondary)
+
+                    Text("fallback.noVirtualModelsDescription".localized())
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                        .multilineTextAlignment(.center)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.small)
-            } else {
-                Text("fallback.enableFirst".localized())
-                    .font(.caption)
-                    .foregroundStyle(.orange)
+
+                if isEnabled {
+                    Button {
+                        onAdd()
+                    } label: {
+                        Label("fallback.createFirst".localized(), systemImage: "plus.circle.fill")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                } else {
+                    Text("fallback.enableFirst".localized())
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
             }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 32)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 32)
     }
 }
 
@@ -371,100 +376,102 @@ struct VirtualModelRow: View {
     }
 
     var body: some View {
-        DisclosureGroup(isExpanded: $isExpanded) {
-            // Fallback entries list
-            ForEach(model.sortedEntries) { entry in
-                FallbackEntryRow(
-                    entry: entry,
-                    isEnabled: isEffectivelyEnabled,
-                    onDelete: {
-                        onDeleteEntry(entry.id)
-                    }
-                )
-            }
-            .onMove { source, destination in
-                onMoveEntry(source, destination)
-            }
-
-            // Add entry button
-            Button {
-                onAddEntry()
-            } label: {
-                Label("fallback.addEntry".localized(), systemImage: "plus.circle")
-                    .font(.subheadline)
-                    .foregroundStyle(.blue)
-            }
-            .buttonStyle(.plain)
-            .disabled(!isGlobalEnabled)
-            .padding(.leading, 4)
-            .padding(.vertical, 4)
-        } label: {
-            HStack(spacing: 12) {
-                // Model name
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack(spacing: 6) {
-                        Text(model.name)
-                            .fontWeight(.medium)
-                            .foregroundStyle(isEffectivelyEnabled ? .primary : .secondary)
-
-                        if !model.isEnabled {
-                            Text("fallback.disabled".localized())
-                                .font(.caption2)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.secondary.opacity(0.2))
-                                .foregroundStyle(.secondary)
-                                .clipShape(Capsule())
+        WithPerceptionTracking {
+            DisclosureGroup(isExpanded: $isExpanded) {
+                // Fallback entries list
+                ForEach(model.sortedEntries) { entry in
+                    FallbackEntryRow(
+                        entry: entry,
+                        isEnabled: isEffectivelyEnabled,
+                        onDelete: {
+                            onDeleteEntry(entry.id)
                         }
-                    }
-
-                    Text("\(model.fallbackEntries.count) " + "fallback.entries".localized())
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
+                    )
+                }
+                .onMove { source, destination in
+                    onMoveEntry(source, destination)
                 }
 
-                Spacer()
-
-                // Toggle button
+                // Add entry button
                 Button {
-                    onToggle()
+                    onAddEntry()
                 } label: {
-                    Image(systemName: model.isEnabled ? "checkmark.circle.fill" : "circle")
-                        .foregroundStyle(model.isEnabled && isGlobalEnabled ? .green : .secondary)
+                    Label("fallback.addEntry".localized(), systemImage: "plus.circle")
+                        .font(.subheadline)
+                        .foregroundStyle(.blue)
                 }
                 .buttonStyle(.plain)
                 .disabled(!isGlobalEnabled)
-            }
-        }
-        .contextMenu {
-            Button {
-                onEdit()
+                .padding(.leading, 4)
+                .padding(.vertical, 4)
             } label: {
-                Label("action.rename".localized(), systemImage: "pencil")
-            }
+                HStack(spacing: 12) {
+                    // Model name
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(spacing: 6) {
+                            Text(model.name)
+                                .fontWeight(.medium)
+                                .foregroundStyle(isEffectivelyEnabled ? .primary : .secondary)
 
-            Button {
-                onToggle()
-            } label: {
-                Label(model.isEnabled ? "fallback.disable".localized() : "fallback.enable".localized(),
-                      systemImage: model.isEnabled ? "xmark.circle" : "checkmark.circle")
-            }
+                            if !model.isEnabled {
+                                Text("fallback.disabled".localized())
+                                    .font(.caption2)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(Color.secondary.opacity(0.2))
+                                    .foregroundStyle(.secondary)
+                                    .clipShape(Capsule())
+                            }
+                        }
 
-            Divider()
+                        Text("\(model.fallbackEntries.count) " + "fallback.entries".localized())
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
 
-            Button(role: .destructive) {
-                showDeleteConfirmation = true
-            } label: {
-                Label("action.delete".localized(), systemImage: "trash")
+                    Spacer()
+
+                    // Toggle button
+                    Button {
+                        onToggle()
+                    } label: {
+                        Image(systemName: model.isEnabled ? "checkmark.circle.fill" : "circle")
+                            .foregroundStyle(model.isEnabled && isGlobalEnabled ? .green : .secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!isGlobalEnabled)
+                }
             }
-        }
-        .confirmationDialog("fallback.deleteConfirm".localized(), isPresented: $showDeleteConfirmation) {
-            Button("action.delete".localized(), role: .destructive) {
-                onDelete()
+            .contextMenu {
+                Button {
+                    onEdit()
+                } label: {
+                    Label("action.rename".localized(), systemImage: "pencil")
+                }
+
+                Button {
+                    onToggle()
+                } label: {
+                    Label(model.isEnabled ? "fallback.disable".localized() : "fallback.enable".localized(),
+                          systemImage: model.isEnabled ? "xmark.circle" : "checkmark.circle")
+                }
+
+                Divider()
+
+                Button(role: .destructive) {
+                    showDeleteConfirmation = true
+                } label: {
+                    Label("action.delete".localized(), systemImage: "trash")
+                }
             }
-            Button("action.cancel".localized(), role: .cancel) {}
-        } message: {
-            Text("fallback.deleteMessage".localized())
+            .confirmationDialog("fallback.deleteConfirm".localized(), isPresented: $showDeleteConfirmation) {
+                Button("action.delete".localized(), role: .destructive) {
+                    onDelete()
+                }
+                Button("action.cancel".localized(), role: .cancel) {}
+            } message: {
+                Text("fallback.deleteMessage".localized())
+            }
         }
     }
 }
@@ -479,50 +486,52 @@ struct FallbackEntryRow: View {
     @State private var showDeleteConfirmation = false
 
     var body: some View {
-        HStack(spacing: 12) {
-            // Priority badge
-            Text("\(entry.priority)")
-                .font(.caption.bold())
-                .frame(width: 20, height: 20)
-                .background(isEnabled ? entry.provider.color.opacity(0.2) : Color.secondary.opacity(0.1))
-                .foregroundStyle(isEnabled ? entry.provider.color : .secondary)
-                .clipShape(Circle())
+        WithPerceptionTracking {
+            HStack(spacing: 12) {
+                // Priority badge
+                Text("\(entry.priority)")
+                    .font(.caption.bold())
+                    .frame(width: 20, height: 20)
+                    .background(isEnabled ? entry.provider.color.opacity(0.2) : Color.secondary.opacity(0.1))
+                    .foregroundStyle(isEnabled ? entry.provider.color : .secondary)
+                    .clipShape(Circle())
 
-            // Provider icon
-            ProviderIcon(provider: entry.provider, size: 24)
-                .opacity(isEnabled ? 1 : 0.5)
+                // Provider icon
+                ProviderIcon(provider: entry.provider, size: 24)
+                    .opacity(isEnabled ? 1 : 0.5)
 
-            // Entry info
-            VStack(alignment: .leading, spacing: 2) {
-                Text(entry.provider.displayName)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundStyle(isEnabled ? .primary : .secondary)
+                // Entry info
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(entry.provider.displayName)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundStyle(isEnabled ? .primary : .secondary)
 
-                Text(entry.modelId)
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-                    .lineLimit(1)
+                    Text(entry.modelId)
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                        .lineLimit(1)
+                }
+
+                Spacer()
+
+                // Delete button
+                Button {
+                    showDeleteConfirmation = true
+                } label: {
+                    Image(systemName: "minus.circle.fill")
+                        .foregroundStyle(.red.opacity(0.7))
+                }
+                .buttonStyle(.plain)
             }
-
-            Spacer()
-
-            // Delete button
-            Button {
-                showDeleteConfirmation = true
-            } label: {
-                Image(systemName: "minus.circle.fill")
-                    .foregroundStyle(.red.opacity(0.7))
+            .padding(.vertical, 4)
+            .padding(.leading, 8)
+            .confirmationDialog("fallback.deleteEntryConfirm".localized(), isPresented: $showDeleteConfirmation) {
+                Button("action.delete".localized(), role: .destructive) {
+                    onDelete()
+                }
+                Button("action.cancel".localized(), role: .cancel) {}
             }
-            .buttonStyle(.plain)
-        }
-        .padding(.vertical, 4)
-        .padding(.leading, 8)
-        .confirmationDialog("fallback.deleteEntryConfirm".localized(), isPresented: $showDeleteConfirmation) {
-            Button("action.delete".localized(), role: .destructive) {
-                onDelete()
-            }
-            Button("action.cancel".localized(), role: .cancel) {}
         }
     }
 }

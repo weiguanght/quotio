@@ -8,6 +8,7 @@
 
 import Foundation
 import SwiftUI
+import Perception
 
 // MARK: - App Mode (DEPRECATED)
 
@@ -87,7 +88,7 @@ enum AppMode: String, Codable, CaseIterable, Identifiable {
 // MARK: - App Mode Manager (DEPRECATED)
 
 @available(*, deprecated, message: "Use OperatingModeManager instead. AppModeManager will be removed in a future version.")
-@Observable
+@Perceptible
 final class AppModeManager {
     static let shared = AppModeManager()
     

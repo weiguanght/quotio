@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import Perception
 
 /// Progress bar for displaying quota/usage percentage
 struct QuotaProgressBar: View {
@@ -16,20 +17,22 @@ struct QuotaProgressBar: View {
     }
     
     var body: some View {
-        GeometryReader { proxy in
-            let fillWidth = proxy.size.width * clamped / 100
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(.quaternary)
-                Capsule()
-                    .fill(tint)
-                    .frame(width: fillWidth)
-                    .animation(.smooth(duration: 0.3), value: clamped)
+        WithPerceptionTracking {
+            GeometryReader { proxy in
+                let fillWidth = proxy.size.width * clamped / 100
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(.quaternary)
+                    Capsule()
+                        .fill(tint)
+                        .frame(width: fillWidth)
+                        .animation(.smooth(duration: 0.3), value: clamped)
+                }
             }
+            .frame(height: height)
+            .accessibilityLabel("Usage")
+            .accessibilityValue("\(Int(clamped)) percent")
         }
-        .frame(height: height)
-        .accessibilityLabel("Usage")
-        .accessibilityValue("\(Int(clamped)) percent")
     }
 }
 

@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import Perception
 
 struct RemoteConnectionSheet: View {
     @Environment(\.dismiss) private var dismiss
@@ -39,39 +40,41 @@ struct RemoteConnectionSheet: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
-            headerView
-            Divider()
-            
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    connectionSection
-                    authenticationSection
-                    advancedSection
-                    
-                    if let result = testResult {
-                        testResultSection(result)
+        WithPerceptionTracking {
+            VStack(spacing: 0) {
+                headerView
+                Divider()
+        
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        connectionSection
+                        authenticationSection
+                        advancedSection
+                
+                        if let result = testResult {
+                            testResultSection(result)
+                        }
                     }
+                    .padding(20)
                 }
-                .padding(20)
+        
+                Divider()
+                footerView
             }
-            
-            Divider()
-            footerView
-        }
-        .frame(width: 500, height: 550)
-        .onAppear {
-            loadExistingConfig()
-        }
-        .alert("remote.sslWarning.title".localized(), isPresented: $showSSLWarning) {
-            Button("action.cancel".localized(), role: .cancel) {
-                // Do nothing - keep SSL enabled
+            .frame(width: 500, height: 550)
+            .onAppear {
+                loadExistingConfig()
             }
-            Button("remote.sslWarning.confirm".localized(), role: .destructive) {
-                verifySSL = pendingSSLValue
+            .alert("remote.sslWarning.title".localized(), isPresented: $showSSLWarning) {
+                Button("action.cancel".localized(), role: .cancel) {
+                    // Do nothing - keep SSL enabled
+                }
+                Button("remote.sslWarning.confirm".localized(), role: .destructive) {
+                    verifySSL = pendingSSLValue
+                }
+            } message: {
+                Text("remote.sslWarning.message".localized())
             }
-        } message: {
-            Text("remote.sslWarning.message".localized())
         }
     }
     

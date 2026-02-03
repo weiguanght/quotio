@@ -8,6 +8,7 @@
 import AppKit
 import Foundation
 import Sparkle
+import Perception
 
 // MARK: - Update Channel
 
@@ -36,7 +37,7 @@ enum UpdateChannel: String, CaseIterable, Identifiable, Sendable {
 
 /// Manages application updates using Sparkle framework
 @MainActor
-@Observable
+@Perceptible
 final class UpdaterService: NSObject {
     
     // MARK: - Properties

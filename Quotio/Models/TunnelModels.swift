@@ -5,6 +5,7 @@
 
 import Foundation
 import SwiftUI
+import Perception
 
 // MARK: - Tunnel Status
 
@@ -49,7 +50,7 @@ enum CloudflareTunnelStatus: String, Sendable {
 
 // MARK: - Tunnel State
 
-@MainActor @Observable
+@MainActor @Perceptible
 final class CloudflareTunnelState {
     var status: CloudflareTunnelStatus = .idle
     var publicURL: String?

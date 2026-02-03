@@ -8,9 +8,10 @@
 
 import AppKit
 import SwiftUI
+import Perception
 
 @MainActor
-@Observable
+@Perceptible
 final class StatusBarManager: NSObject, NSMenuDelegate {
     static let shared = StatusBarManager()
     
@@ -20,7 +21,7 @@ final class StatusBarManager: NSObject, NSMenuDelegate {
     
     // Native menu builder
     private var menuBuilder: StatusBarMenuBuilder?
-    private weak var viewModel: QuotaViewModel?
+    private weak var viewModel: QuotaViewModel? = nil
     
     private override init() {
         super.init()
@@ -174,9 +175,11 @@ struct StatusBarDefaultView: View {
     let isRunning: Bool
     
     var body: some View {
-        Image(systemName: isRunning ? "gauge.with.dots.needle.67percent" : "gauge.with.dots.needle.0percent")
-            .font(.system(size: 14))
-            .frame(height: 22)
+        WithPerceptionTracking {
+            Image(systemName: isRunning ? "gauge.with.dots.needle.67percent" : "gauge.with.dots.needle.0percent")
+                .font(.system(size: 14))
+                .frame(height: 22)
+        }
     }
 }
 
@@ -187,14 +190,16 @@ struct StatusBarQuotaView: View {
     let colorMode: MenuBarColorMode
     
     var body: some View {
-        HStack(spacing: 10) {
-            ForEach(items) { item in
-                StatusBarQuotaItemView(item: item, colorMode: colorMode)
+        WithPerceptionTracking {
+            HStack(spacing: 10) {
+                ForEach(items) { item in
+                    StatusBarQuotaItemView(item: item, colorMode: colorMode)
+                }
             }
+            .padding(.horizontal, 4)
+            .frame(height: 22)
+            .fixedSize()
         }
-        .padding(.horizontal, 4)
-        .frame(height: 22)
-        .fixedSize()
     }
 }
 
@@ -207,28 +212,30 @@ struct StatusBarQuotaItemView: View {
     @State private var settings = MenuBarSettingsManager.shared
     
     var body: some View {
-        let displayMode = settings.quotaDisplayMode
-        let displayPercent = displayMode.displayValue(from: item.percentage)
+        WithPerceptionTracking {
+            let displayMode = settings.quotaDisplayMode
+            let displayPercent = displayMode.displayValue(from: item.percentage)
         
-        HStack(spacing: 2) {
-            if let assetName = item.provider.menuBarIconAsset {
-                Image(assetName)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 14, height: 14)
-            } else {
-                Text(item.provider.menuBarSymbol)
-                    .font(.system(size: 11, weight: .semibold, design: .rounded))
-                    .foregroundStyle(colorMode == .colored ? item.provider.color : .primary)
+            HStack(spacing: 2) {
+                if let assetName = item.provider.menuBarIconAsset {
+                    Image(assetName)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 14, height: 14)
+                } else {
+                    Text(item.provider.menuBarSymbol)
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .foregroundStyle(colorMode == .colored ? item.provider.color : .primary)
+                        .fixedSize()
+                }
+            
+                Text(formatPercentage(displayPercent))
+                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .foregroundStyle(colorMode == .colored ? item.statusColor : .primary)
                     .fixedSize()
             }
-            
-            Text(formatPercentage(displayPercent))
-                .font(.system(size: 11, weight: .medium, design: .monospaced))
-                .foregroundStyle(colorMode == .colored ? item.statusColor : .primary)
-                .fixedSize()
+            .fixedSize()
         }
-        .fixedSize()
     }
     
     private func formatPercentage(_ value: Double) -> String {

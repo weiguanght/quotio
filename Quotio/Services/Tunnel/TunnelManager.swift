@@ -5,9 +5,10 @@
 
 import Foundation
 import AppKit
+import Perception
 
 @MainActor
-@Observable
+@Perceptible
 final class TunnelManager {
     static let shared = TunnelManager()
     

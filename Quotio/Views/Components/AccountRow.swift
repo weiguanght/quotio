@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import Perception
 
 /// Represents the source/type of an account for display purposes
 enum AccountSource: Equatable {
@@ -159,177 +160,179 @@ struct AccountRow: View {
     }
     
     var body: some View {
-        HStack(spacing: 12) {
-            // Provider icon
-            ProviderIcon(provider: account.provider, size: 24)
+        WithPerceptionTracking {
+            HStack(spacing: 12) {
+                // Provider icon
+                ProviderIcon(provider: account.provider, size: 24)
+        
+                // Account info
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(maskedDisplayName)
+                        .fontWeight(.medium)
+                        .lineLimit(1)
             
-            // Account info
-            VStack(alignment: .leading, spacing: 2) {
-                Text(maskedDisplayName)
-                    .fontWeight(.medium)
-                    .lineLimit(1)
+                    HStack(spacing: 6) {
+                        // Provider name
+                        Text(account.provider.displayName)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                 
-                HStack(spacing: 6) {
-                    // Provider name
-                    Text(account.provider.displayName)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        // Status indicator (only for proxy accounts)
+                        if let status = account.status {
+                            Circle()
+                                .fill(statusColor)
+                                .frame(width: 6, height: 6)
                     
-                    // Status indicator (only for proxy accounts)
-                    if let status = account.status {
-                        Circle()
-                            .fill(statusColor)
-                            .frame(width: 6, height: 6)
-                        
-                        Text(status)
-                            .font(.caption)
-                            .foregroundStyle(statusColor)
-                    } else {
-                        // Source indicator for non-proxy accounts
-                        Text("•")
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                        
-                        Text(account.source.displayName)
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
+                            Text(status)
+                                .font(.caption)
+                                .foregroundStyle(statusColor)
+                        } else {
+                            // Source indicator for non-proxy accounts
+                            Text("•")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                    
+                            Text(account.source.displayName)
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                        }
                     }
                 }
-            }
-            
-            Spacer()
-            
-            // Disabled badge
-            if account.isDisabled {
-                Text("providers.disabled".localized())
-                    .font(.caption2)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(.secondary.opacity(0.2))
-                    .clipShape(Capsule())
-            }
-            
-            // Active in IDE badge (Antigravity only)
-            if account.provider == .antigravity && isActiveInIDE {
-                Text("antigravity.active".localized())
-                    .font(.caption2)
-                    .fontWeight(.medium)
-                    .foregroundStyle(Color(red: 0.13, green: 0.55, blue: 0.13))
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(Color(red: 0.85, green: 0.95, blue: 0.85))
-                    .clipShape(Capsule())
-            }
-            
-            // Switch button (Antigravity only, for proxy/direct accounts that are not active)
-            if account.provider == .antigravity && !isActiveInIDE && account.source != .autoDetected {
-                Button {
-                    onSwitch?()
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "rectangle.portrait.and.arrow.right")
-                            .font(.caption2)
-                        Text("antigravity.useInIDE".localized())
-                            .font(.caption2)
-                    }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.blue.opacity(0.1))
-                    .foregroundStyle(.blue)
-                    .clipShape(Capsule())
+        
+                Spacer()
+        
+                // Disabled badge
+                if account.isDisabled {
+                    Text("providers.disabled".localized())
+                        .font(.caption2)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(.secondary.opacity(0.2))
+                        .clipShape(Capsule())
                 }
-                .buttonStyle(.plain)
-                .help("antigravity.switch.title".localized())
-            }
-            
-            // Menu bar toggle
-            MenuBarBadge(
-                isSelected: isMenuBarSelected,
-                onTap: handleMenuBarToggle
-            )
-
-            // Edit button (GLM only)
-            if account.canEdit, let onEdit = onEdit {
-                Button {
-                    onEdit()
-                } label: {
-                    Image(systemName: "pencil")
+        
+                // Active in IDE badge (Antigravity only)
+                if account.provider == .antigravity && isActiveInIDE {
+                    Text("antigravity.active".localized())
+                        .font(.caption2)
+                        .fontWeight(.medium)
+                        .foregroundStyle(Color(red: 0.13, green: 0.55, blue: 0.13))
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color(red: 0.85, green: 0.95, blue: 0.85))
+                        .clipShape(Capsule())
+                }
+        
+                // Switch button (Antigravity only, for proxy/direct accounts that are not active)
+                if account.provider == .antigravity && !isActiveInIDE && account.source != .autoDetected {
+                    Button {
+                        onSwitch?()
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "rectangle.portrait.and.arrow.right")
+                                .font(.caption2)
+                            Text("antigravity.useInIDE".localized())
+                                .font(.caption2)
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.blue.opacity(0.1))
                         .foregroundStyle(.blue)
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .help("antigravity.switch.title".localized())
                 }
-                .buttonStyle(.rowAction)
-                .help("action.edit".localized())
-            }
+        
+                // Menu bar toggle
+                MenuBarBadge(
+                    isSelected: isMenuBarSelected,
+                    onTap: handleMenuBarToggle
+                )
 
-            // Delete button (only for proxy accounts)
-            if account.canDelete, onDelete != nil {
-                Button(role: .destructive) {
-                    showDeleteConfirmation = true
-                } label: {
-                    Image(systemName: "trash")
-                        .foregroundStyle(.red.opacity(0.8))
+                // Edit button (GLM only)
+                if account.canEdit, let onEdit = onEdit {
+                    Button {
+                        onEdit()
+                    } label: {
+                        Image(systemName: "pencil")
+                            .foregroundStyle(.blue)
+                    }
+                    .buttonStyle(.rowAction)
+                    .help("action.edit".localized())
                 }
-                .buttonStyle(.rowActionDestructive)
-                .help("action.delete".localized())
+
+                // Delete button (only for proxy accounts)
+                if account.canDelete, onDelete != nil {
+                    Button(role: .destructive) {
+                        showDeleteConfirmation = true
+                    } label: {
+                        Image(systemName: "trash")
+                            .foregroundStyle(.red.opacity(0.8))
+                    }
+                    .buttonStyle(.rowActionDestructive)
+                    .help("action.delete".localized())
+                }
             }
-        }
-        .contentShape(Rectangle())
-        .contextMenu {
-            // Switch account option (Antigravity only)
-            if account.provider == .antigravity && !isActiveInIDE && account.source != .autoDetected {
+            .contentShape(Rectangle())
+            .contextMenu {
+                // Switch account option (Antigravity only)
+                if account.provider == .antigravity && !isActiveInIDE && account.source != .autoDetected {
+                    Button {
+                        onSwitch?()
+                    } label: {
+                        Label("antigravity.switch.title".localized(), systemImage: "arrow.triangle.2.circlepath")
+                    }
+            
+                    Divider()
+                }
+        
+                // Menu bar toggle
                 Button {
-                    onSwitch?()
+                    handleMenuBarToggle()
                 } label: {
-                    Label("antigravity.switch.title".localized(), systemImage: "arrow.triangle.2.circlepath")
+                    if isMenuBarSelected {
+                        Label("menubar.hideFromMenuBar".localized(), systemImage: "chart.bar")
+                    } else {
+                        Label("menubar.showOnMenuBar".localized(), systemImage: "chart.bar.fill")
+                    }
                 }
-                
-                Divider()
-            }
+        
+                // Delete option (only for proxy accounts)
+                if account.canDelete, onDelete != nil {
+                    Divider()
             
-            // Menu bar toggle
-            Button {
-                handleMenuBarToggle()
-            } label: {
-                if isMenuBarSelected {
-                    Label("menubar.hideFromMenuBar".localized(), systemImage: "chart.bar")
-                } else {
-                    Label("menubar.showOnMenuBar".localized(), systemImage: "chart.bar.fill")
+                    Button(role: .destructive) {
+                        showDeleteConfirmation = true
+                    } label: {
+                        Label("action.delete".localized(), systemImage: "trash")
+                    }
                 }
             }
-            
-            // Delete option (only for proxy accounts)
-            if account.canDelete, onDelete != nil {
-                Divider()
-                
-                Button(role: .destructive) {
-                    showDeleteConfirmation = true
-                } label: {
-                    Label("action.delete".localized(), systemImage: "trash")
+            .confirmationDialog("providers.deleteConfirm".localized(), isPresented: $showDeleteConfirmation) {
+                Button("action.delete".localized(), role: .destructive) {
+                    onDelete?()
                 }
+                Button("action.cancel".localized(), role: .cancel) {}
+            } message: {
+                Text("providers.deleteMessage".localized())
             }
-        }
-        .confirmationDialog("providers.deleteConfirm".localized(), isPresented: $showDeleteConfirmation) {
-            Button("action.delete".localized(), role: .destructive) {
-                onDelete?()
+            .alert("menubar.warning.title".localized(), isPresented: $showWarning) {
+                Button("menubar.warning.confirm".localized()) {
+                    settings.toggleItem(account.menuBarItem)
+                }
+                Button("menubar.warning.cancel".localized(), role: .cancel) {}
+            } message: {
+                Text("menubar.warning.message".localized())
             }
-            Button("action.cancel".localized(), role: .cancel) {}
-        } message: {
-            Text("providers.deleteMessage".localized())
-        }
-        .alert("menubar.warning.title".localized(), isPresented: $showWarning) {
-            Button("menubar.warning.confirm".localized()) {
-                settings.toggleItem(account.menuBarItem)
+            .alert("menubar.maxItems.title".localized(), isPresented: $showMaxItemsAlert) {
+                Button("action.ok".localized(), role: .cancel) {}
+            } message: {
+                Text(String(
+                    format: "menubar.maxItems.message".localized(),
+                    settings.menuBarMaxItems
+                ))
             }
-            Button("menubar.warning.cancel".localized(), role: .cancel) {}
-        } message: {
-            Text("menubar.warning.message".localized())
-        }
-        .alert("menubar.maxItems.title".localized(), isPresented: $showMaxItemsAlert) {
-            Button("action.ok".localized(), role: .cancel) {}
-        } message: {
-            Text(String(
-                format: "menubar.maxItems.message".localized(),
-                settings.menuBarMaxItems
-            ))
         }
     }
     

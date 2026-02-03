@@ -7,9 +7,10 @@ import Foundation
 import SwiftUI
 import AppKit
 import os.log
+import Perception
 
 @MainActor
-@Observable
+@Perceptible
 final class AgentSetupViewModel {
     private let detectionService = AgentDetectionService()
     private let configurationService = AgentConfigurationService()
@@ -49,10 +50,10 @@ final class AgentSetupViewModel {
     /// Task reference for cancellation when switching agents quickly
     private var configurationLoadTask: Task<Void, Never>?
 
-    weak var proxyManager: CLIProxyManager?
+    weak var proxyManager: CLIProxyManager? = nil
 
     /// Reference to QuotaViewModel for quota checking
-    weak var quotaViewModel: QuotaViewModel?
+    weak var quotaViewModel: QuotaViewModel? = nil
 
     init() {}
 

@@ -10,6 +10,7 @@ import AppKit
 import Foundation
 import ServiceManagement
 import os.log
+import Perception
 
 /// Error types for Launch at Login operations
 enum LaunchAtLoginError: LocalizedError {
@@ -44,7 +45,7 @@ enum LaunchAtLoginError: LocalizedError {
 /// - Status refresh on app launch
 /// - Handle .requiresApproval status
 @MainActor
-@Observable
+@Perceptible
 final class LaunchAtLoginManager {
     static let shared = LaunchAtLoginManager()
     

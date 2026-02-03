@@ -6,20 +6,23 @@
 //
 
 import SwiftUI
+import Perception
 
 /// Compact badge for marking experimental features
 struct ExperimentalBadge: View {
     var body: some View {
-        Text("badge.experimental".localized())
-            .font(.caption2)
-            .fontWeight(.medium)
-            .foregroundStyle(.white)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 2)
-            .background(
-                Capsule()
-                    .fill(.orange.gradient)
-            )
+        WithPerceptionTracking {
+            Text("badge.experimental".localized())
+                .font(.caption2)
+                .fontWeight(.medium)
+                .foregroundStyle(.white)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(
+                    Capsule()
+                        .fill(.orange.gradient)
+                )
+        }
     }
 }
 

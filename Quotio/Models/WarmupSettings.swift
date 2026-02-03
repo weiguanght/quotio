@@ -4,7 +4,7 @@
 //
 
 import Foundation
-import Observation
+import Perception
 
 // MARK: - Warmup Cadence
 
@@ -62,7 +62,7 @@ enum WarmupScheduleMode: String, CaseIterable, Identifiable, Codable {
 }
 
 @MainActor
-@Observable
+@Perceptible
 final class WarmupSettingsManager {
     static let shared = WarmupSettingsManager()
     

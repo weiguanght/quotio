@@ -5,6 +5,7 @@
 
 import SwiftUI
 import UniformTypeIdentifiers
+import Perception
 
 struct DashboardScreen: View {
     @Environment(QuotaViewModel.self) private var viewModel
@@ -72,76 +73,78 @@ struct DashboardScreen: View {
     }
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                if modeManager.isRemoteProxyMode {
-                    // Remote Mode: Show remote connection status and data
-                    remoteModeContent
-                } else if modeManager.isLocalProxyMode {
-                    // Full Mode: Check binary and proxy status
-                    if !viewModel.proxyManager.isBinaryInstalled {
-                        installBinarySection
-                    } else if !viewModel.proxyManager.proxyStatus.running {
-                        startProxySection
-                    } else {
-                        fullModeContent
-                    }
-                } else {
-                    // Quota-Only Mode: Show quota dashboard
-                    quotaOnlyModeContent
-                }
-            }
-            .padding(24)
-        }
-        .navigationTitle("nav.dashboard".localized())
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    Task {
-                        if modeManager.isLocalProxyMode && viewModel.proxyManager.proxyStatus.running {
-                            await viewModel.refreshData()
+        WithPerceptionTracking {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    if modeManager.isRemoteProxyMode {
+                        // Remote Mode: Show remote connection status and data
+                        remoteModeContent
+                    } else if modeManager.isLocalProxyMode {
+                        // Full Mode: Check binary and proxy status
+                        if !viewModel.proxyManager.isBinaryInstalled {
+                            installBinarySection
+                        } else if !viewModel.proxyManager.proxyStatus.running {
+                            startProxySection
                         } else {
-                            await viewModel.refreshQuotasUnified()
+                            fullModeContent
                         }
+                    } else {
+                        // Quota-Only Mode: Show quota dashboard
+                        quotaOnlyModeContent
                     }
-                } label: {
-                    Image(systemName: "arrow.clockwise")
                 }
-                .disabled(viewModel.isLoadingQuotas)
+                .padding(24)
             }
-        }
-        .sheet(item: $selectedProvider) { provider in
-            OAuthSheet(provider: provider, projectId: $projectId) {
-                selectedProvider = nil
-                projectId = ""
-                viewModel.oauthState = nil
-                Task { await viewModel.refreshData() }
-            }
-            .environment(viewModel)
-        }
-        .sheet(item: $selectedAgentForConfig) { (agent: CLIAgent) in
-            AgentConfigSheet(viewModel: viewModel.agentSetupViewModel, agent: agent)
-                .id(sheetPresentationID)
-                .onDisappear {
-                    viewModel.agentSetupViewModel.dismissConfiguration()
-                    Task { await viewModel.agentSetupViewModel.refreshAgentStatuses() }
-                }
-        }
-        .fileImporter(
-            isPresented: $isImporterPresented,
-            allowedContentTypes: [.json],
-            allowsMultipleSelection: false
-        ) { result in
-            if case .success(let urls) = result, let url = urls.first {
-                Task {
-                    await viewModel.importVertexServiceAccount(url: url)
-                    await viewModel.refreshData()
+            .navigationTitle("nav.dashboard".localized())
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        Task {
+                            if modeManager.isLocalProxyMode && viewModel.proxyManager.proxyStatus.running {
+                                await viewModel.refreshData()
+                            } else {
+                                await viewModel.refreshQuotasUnified()
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                    }
+                    .disabled(viewModel.isLoadingQuotas)
                 }
             }
-        }
-        .task {
-            if modeManager.isLocalProxyMode {
-                await viewModel.agentSetupViewModel.refreshAgentStatuses()
+            .sheet(item: $selectedProvider) { provider in
+                OAuthSheet(provider: provider, projectId: $projectId) {
+                    selectedProvider = nil
+                    projectId = ""
+                    viewModel.oauthState = nil
+                    Task { await viewModel.refreshData() }
+                }
+                .environment(viewModel)
+            }
+            .sheet(item: $selectedAgentForConfig) { (agent: CLIAgent) in
+                AgentConfigSheet(viewModel: viewModel.agentSetupViewModel, agent: agent)
+                    .id(sheetPresentationID)
+                    .onDisappear {
+                        viewModel.agentSetupViewModel.dismissConfiguration()
+                        Task { await viewModel.agentSetupViewModel.refreshAgentStatuses() }
+                    }
+            }
+            .fileImporter(
+                isPresented: $isImporterPresented,
+                allowedContentTypes: [.json],
+                allowsMultipleSelection: false
+            ) { result in
+                if case .success(let urls) = result, let url = urls.first {
+                    Task {
+                        await viewModel.importVertexServiceAccount(url: url)
+                        await viewModel.refreshData()
+                    }
+                }
+            }
+            .task {
+                if modeManager.isLocalProxyMode {
+                    await viewModel.agentSetupViewModel.refreshAgentStatuses()
+                }
             }
         }
     }
@@ -819,51 +822,53 @@ struct GettingStartedStepRow: View {
     let onAction: () -> Void
     
     var body: some View {
-        HStack(spacing: 16) {
-            ZStack {
-                Circle()
-                    .fill(step.isCompleted ? Color.green : Color.accentColor.opacity(0.15))
-                    .frame(width: 40, height: 40)
-                
-                if step.isCompleted {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundStyle(.white)
-                } else {
-                    Image(systemName: step.icon)
-                        .font(.system(size: 16))
-                        .foregroundStyle(Color.accentColor)
-                }
-            }
+        WithPerceptionTracking {
+            HStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .fill(step.isCompleted ? Color.green : Color.accentColor.opacity(0.15))
+                        .frame(width: 40, height: 40)
             
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text(step.title)
-                        .font(.headline)
-                    
                     if step.isCompleted {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(.green)
-                            .font(.caption)
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(.white)
+                    } else {
+                        Image(systemName: step.icon)
+                            .font(.system(size: 16))
+                            .foregroundStyle(Color.accentColor)
                     }
                 }
+        
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(step.title)
+                            .font(.headline)
                 
-                Text(step.description)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            }
+                        if step.isCompleted {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(.green)
+                                .font(.caption)
+                        }
+                    }
             
-            Spacer()
-            
-            if let actionLabel = step.actionLabel {
-                Button(actionLabel) {
-                    onAction()
+                    Text(step.description)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.small)
+        
+                Spacer()
+        
+                if let actionLabel = step.actionLabel {
+                    Button(actionLabel) {
+                        onAction()
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                }
             }
+            .padding(.vertical, 8)
         }
-        .padding(.vertical, 8)
     }
 }
 
@@ -877,20 +882,22 @@ struct KPICard: View {
     let color: Color
     
     var body: some View {
-        GroupBox {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(value)
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
+        WithPerceptionTracking {
+            GroupBox {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(value)
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundStyle(color)
+            
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            } label: {
+                Label(title, systemImage: icon)
                     .foregroundStyle(color)
-                
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        } label: {
-            Label(title, systemImage: icon)
-                .foregroundStyle(color)
         }
     }
 }
@@ -902,20 +909,22 @@ struct ProviderChip: View {
     let count: Int
     
     var body: some View {
-        HStack(spacing: 6) {
-            ProviderIcon(provider: provider, size: 16)
-            Text(provider.displayName)
-            if count > 1 {
-                Text("×\(count)")
-                    .fontWeight(.semibold)
+        WithPerceptionTracking {
+            HStack(spacing: 6) {
+                ProviderIcon(provider: provider, size: 16)
+                Text(provider.displayName)
+                if count > 1 {
+                    Text("×\(count)")
+                        .fontWeight(.semibold)
+                }
             }
+            .font(.caption)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(provider.color.opacity(0.15))
+            .foregroundStyle(provider.color)
+            .clipShape(Capsule())
         }
-        .font(.caption)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(provider.color.opacity(0.15))
-        .foregroundStyle(provider.color)
-        .clipShape(Capsule())
     }
 }
 
@@ -978,37 +987,39 @@ struct QuotaProviderRow: View {
     }
     
     var body: some View {
-        HStack(spacing: 12) {
-            ProviderIcon(provider: provider, size: 24)
+        WithPerceptionTracking {
+            HStack(spacing: 12) {
+                ProviderIcon(provider: provider, size: 24)
+        
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(provider.displayName)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
             
-            VStack(alignment: .leading, spacing: 2) {
-                Text(provider.displayName)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                
-                Text("\(accounts.count) " + "quota.accounts".localized())
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    Text("\(accounts.count) " + "quota.accounts".localized())
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+        
+                Spacer()
+        
+                // Lowest quota indicator
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(quotaColor)
+                        .frame(width: 8, height: 8)
+            
+                    Text(String(format: "%.0f%%", lowestQuota))
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(quotaColor)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(quotaColor.opacity(0.1))
+                .clipShape(Capsule())
             }
-            
-            Spacer()
-            
-            // Lowest quota indicator
-            HStack(spacing: 6) {
-                Circle()
-                    .fill(quotaColor)
-                    .frame(width: 8, height: 8)
-                
-                Text(String(format: "%.0f%%", lowestQuota))
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(quotaColor)
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(quotaColor.opacity(0.1))
-            .clipShape(Capsule())
+            .padding(.vertical, 6)
         }
-        .padding(.vertical, 6)
     }
 }
